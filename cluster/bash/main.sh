@@ -13,4 +13,4 @@ fi
 
 source cluster/config/main.sh
 
-sbatch  cluster/sbatch/$cluster.sbatch mblr.py --env jax_pendulum --mode train --episodes 500 --seed 27 --eval-over 10
+sbatch  cluster/sbatch/$cluster.sbatch mbrl.py --env jax_pendulum --mode train --episodes 500 --seed 27 --eval-over 10
