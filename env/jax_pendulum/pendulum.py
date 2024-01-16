@@ -99,8 +99,9 @@ class JaxPendulum(JaxBaseEnv):
 
     def _wrap_state(self):
         wrapped_pos = wrap(self._state[:self.n])
-        clipped_vel = np.clip(self._state[self.n:], -self._vel_limit, self._vel_limit)
-        self._state = jnp.concatenate((wrapped_pos, clipped_vel))
+        # clipped_vel = np.clip(self._state[self.n:], -self._vel_limit, self._vel_limit)
+        # self._state = jnp.concatenate((wrapped_pos, clipped_vel))
+        self._state = jnp.concatenate((wrapped_pos, self._state[self.n:]))
 
     def _reset_state(self, **kwargs):
         if 'obs' in kwargs:
