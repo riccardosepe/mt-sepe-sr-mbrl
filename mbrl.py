@@ -4,6 +4,8 @@ from copy import deepcopy
 import random
 import numpy as np
 import torch
+from tqdm import tqdm
+
 torch.set_default_dtype(torch.float64)
 from torch.utils.tensorboard import SummaryWriter
 from env.utils import make_env
@@ -129,7 +131,7 @@ class MBRL:
 
         if not self.arglist.resume:
             # Initialize replay buffer with K random episodes
-            for episode in range(self.arglist.K):
+            for episode in tqdm(range(self.arglist.K)):
                 o,_,_ = self.env.reset()
                 o_tensor = torch.tensor(o, dtype=torch.float64, device=self.device)
                 ep_r = 0
@@ -144,7 +146,7 @@ class MBRL:
                     o_tensor = o_1_tensor
                     if done:
                         break
-            
+
             print("Done initialization ...")
         print("Started training ...")
 
@@ -152,7 +154,7 @@ class MBRL:
             # Model learning
             transition_loss_list, reward_loss_list = [], []
             transition_grad_list, reward_grad_list = [], []
-            for model_batches in range(self.arglist.model_batches):
+            for model_batches in tqdm(range(self.arglist.model_batches)):
                 O, A, R, O_1 = self.replay_buffer.sample_transitions(self.arglist.batch_size)
                                 
                 # Dynamics learning
@@ -189,7 +191,7 @@ class MBRL:
             actor_grad_list, critic_grad_list = [], []
 
             nan_count = 0
-            for behaviour_batches in range(self.arglist.behaviour_batches):
+            for behaviour_batches in tqdm(range(self.arglist.behaviour_batches)):
                 O = self.replay_buffer.sample_states(self.arglist.batch_size)
                 t = 0
                 values, values_target, values_lambda, R = [], [], [], []
@@ -260,6 +262,7 @@ class MBRL:
             writer.add_scalar('actor_grad',np.mean(actor_grad_list),episode)
 
             # Environment Interaction
+            print("Starting Environment Interaction")
             o,_,_ = self.env.reset()
             o_tensor = torch.tensor(o, dtype=torch.float64, device=self.device).unsqueeze(0)
             ep_r = 0
@@ -289,11 +292,12 @@ class MBRL:
                     if (episode % 25 == 0 or episode == self.arglist.episodes-1) and episode > self.start_episode:
                         self.save_emergency_checkpoint(episode)
                     break
+            print("Done Environment Interaction")
 
     def eval(self, episodes, render=False):
         # Evaluate agent performance over several episodes
         ep_r_list = []
-        for episode in range(episodes):
+        for episode in tqdm(range(episodes)):
             o,_,_ = self.env.reset()
             ep_r = 0
             while True:

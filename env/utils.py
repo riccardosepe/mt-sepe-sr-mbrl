@@ -1,4 +1,6 @@
 import os
+
+
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import numpy as np
@@ -48,19 +50,18 @@ def post_process(u_t, env_name):
         return np.array([wrap(u_t[0]),wrap(u_t[1]),wrap(u_t[2]),u_t[3],u_t[4],u_t[5]])
 
 def make_env(name, mle=False):
-    
     if name == "pendulum":
         from env.pendulum.pendulum import pendulum as Env
 
     elif name == "reacher":
         from env.reacher.reacher import reacher as Env
-    
+
     elif name == "cartpole":
         from env.cartpole.cartpole import cartpole as Env
 
     elif name == "acrobot":
         from env.acrobot.acrobot import acrobot as Env
-        
+
     elif name == "cart2pole":
         from env.cart2pole.cart2pole import cart2pole as Env
 
@@ -69,7 +70,14 @@ def make_env(name, mle=False):
 
     elif name == "cart3pole":
         from env.cart3pole.cart3pole import cart3pole as Env
-        
+
+    elif name == "jax_pendulum":
+        from env.wrapped_envs import WrappedJaxPendulum as Env
+
+    else:
+        raise NotImplementedError
+
+
     env = Env(mle)
 
     return env

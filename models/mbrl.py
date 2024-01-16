@@ -3,7 +3,7 @@ import torch
 torch.set_default_dtype(torch.float64)
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
-from functorch import jacrev
+from torch.func import jacrev
 from collections import deque
 import random
 
@@ -133,9 +133,16 @@ class lnn(torch.nn.Module):
                                        torch.cos(q[:,3]),torch.sin(q[:,3])))
         
         elif self.env_name == "acro3bot":
-            return torch.column_stack((torch.cos(q[:,0]),torch.sin(q[:,0]),\
-                                       torch.cos(q[:,1]),torch.sin(q[:,1]),\
+            return torch.column_stack((torch.cos(q[:,0]),torch.sin(q[:,0]),
+                                       torch.cos(q[:,1]),torch.sin(q[:,1]),
                                        torch.cos(q[:,2]),torch.sin(q[:,2])))
+
+        elif self.env_name == "jax_pendulum":
+            return torch.column_stack((torch.cos(q[:, 0]), torch.sin(q[:, 0]),
+                                       torch.cos(q[:, 1]), torch.sin(q[:, 1])))
+
+        else:
+            raise NotImplementedError
 
     def inverse_trig_transform_model(self, x):
         if self.env_name == "pendulum":
@@ -157,6 +164,12 @@ class lnn(torch.nn.Module):
         elif self.env_name == "acro3bot":
             return torch.cat((torch.atan2(x[:,1],x[:,0]).unsqueeze(1),torch.atan2(x[:,3],x[:,2]).unsqueeze(1),torch.atan2(x[:,5],x[:,4]).unsqueeze(1),
                               x[:,6:]),1)
+
+        elif self.env_name == "jax_pendulum":
+            return torch.cat((torch.atan2(x[:,1],x[:,0]).unsqueeze(1),torch.atan2(x[:,3],x[:,2]).unsqueeze(1),x[:,4:]),1)
+
+        else:
+            raise NotImplementedError
 
     def compute_L(self, q):
         y1_L = F.softplus(self.fc1_L(q))
@@ -232,6 +245,12 @@ class lnn(torch.nn.Module):
         
         elif self.env_name == "cart3pole" or self.env_name == "acro3bot":
             A = torch.cat((a[:,:1],self.a_zeros,a[:,1:]),1)
+
+        elif self.env_name == "jax_pendulum":
+            A = torch.diag(a)
+
+        else:
+            raise NotImplementedError
 
         return A
 
