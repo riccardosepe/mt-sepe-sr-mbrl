@@ -13,4 +13,4 @@ fi
 
 source cluster/config/main.sh
 
-sbatch  cluster/sbatch/$cluster.sbatch mbrl.py --env reacher --mode train --episodes 500 --seed 27
+sbatch  cluster/sbatch/$cluster.sbatch mbrl.py --env acrobot --mode train --episodes 500 --seed 27
