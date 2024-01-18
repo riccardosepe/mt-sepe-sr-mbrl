@@ -26,3 +26,6 @@ class WrappedJaxPendulum:
 
     def step(self, a=None, da_ds=None):
         return self._env.step(a, 1)
+
+    def render(self):
+        return self._env.render()
