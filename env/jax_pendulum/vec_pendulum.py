@@ -41,12 +41,15 @@ class VecJaxPendulum(JaxPendulum):
                 state = self._batched_obs_to_state(obs)
                 self._state = jnp.array(state)
         elif 'rand' in kwargs and kwargs['rand']:
-            initial_pos = np.random.uniform(-1, 1, size=(self.n,)) * self._pos_limit
-            initial_vel = np.random.uniform(-1, 1, size=(self.n,)) * self._vel_limit
+            initial_pos = np.random.uniform(-1,
+                                            1, size=(self.n,)) * self._pos_limit
+            initial_vel = np.random.uniform(-1,
+                                            1, size=(self.n,)) * self._vel_limit
             self._state = jnp.concatenate((initial_pos, initial_vel))
         else:
             # with 2 links it should be something like [q0, q1, q0_dot, q1_dot]
-            self._state = jnp.zeros((self.batch_size, 2 * self.n,))  # initial condition
+            self._state = jnp.zeros(
+                (self.batch_size, 2 * self.n,))  # initial condition
             # TODO: set initial configuration (random?)
         self._wrap_state()
 
@@ -62,7 +65,8 @@ class VecJaxPendulum(JaxPendulum):
 
     def _wrap_state(self):
         wrapped_pos = self._batched_wrap(self._state[:, :self.n])
-        clipped_vel = np.clip(self._state[:, -self.n:], -self._vel_limit, self._vel_limit)
+        clipped_vel = np.clip(
+            self._state[:, -self.n:], -self._vel_limit, self._vel_limit)
         self._state = jnp.concatenate((wrapped_pos, clipped_vel), axis=1)
 
     def step(self, a: np.ndarray, action_repeat, **kwargs):
@@ -77,7 +81,8 @@ class VecJaxPendulum(JaxPendulum):
                                         t0=self._t,
                                         dt=self._dt,
                                         ips=self._instants_per_step,
-                                        dynamical_matrices_fn=Partial(self._dynamical_matrices_fn),
+                                        dynamical_matrices_fn=Partial(
+                                            self._dynamical_matrices_fn),
                                         ode_factory=Partial(ode_factory),
                                         params=self.params
                                         ))
@@ -91,19 +96,24 @@ class VecJaxPendulum(JaxPendulum):
         return self.get_obs()
 
     def _done(self, **kwargs):
-        raise NotImplementedError("Should not call done signal in this environment")
+        raise NotImplementedError(
+            "Should not call done signal in this environment")
 
     def get_reward(self, **kwargs):
-        raise NotImplementedError("Should not call reward signal in this environment")
+        raise NotImplementedError(
+            "Should not call reward signal in this environment")
 
     def cartesian_from_obs(self, obs: np.ndarray = None, numpy: bool = False) -> Union[np.ndarray, jnp.ndarray]:
-        raise NotImplementedError("Should not call cartesian_from_obs method in this environment")
+        raise NotImplementedError(
+            "Should not call cartesian_from_obs method in this environment")
 
     def _draw(self, **kwargs):
-        raise NotImplementedError("Should not call draw method in this environment")
+        raise NotImplementedError(
+            "Should not call draw method in this environment")
 
     def render(self, **kwargs):
-        raise NotImplementedError("Should not call render method in this environment")
+        raise NotImplementedError(
+            "Should not call render method in this environment")
 
     def close(self):
         raise NotImplementedError("Should not call close in this environment")

@@ -36,7 +36,8 @@ class Logger:
         if resume:
             self.run_id = conf['setup_args']['run_id']
             if self.run_id is None:
-                raise ValueError("If 'resume' is True, 'run_id' must be non-null")
+                raise ValueError(
+                    "If 'resume' is True, 'run_id' must be non-null")
         else:
             self.run_id = wandb.util.generate_id()
             conf['setup_args']['run_id'] = self.run_id
@@ -85,16 +86,20 @@ class Logger:
             if resume:
                 self.wandb_name = wb_name
                 if self.wandb_name is None:
-                    raise ValueError("Run name cannot be null if resume is True.")
+                    raise ValueError(
+                        "Run name cannot be null if resume is True.")
             else:
                 w_name = wb_name if wb_name is not None else f'run_{time.now().strftime("%Y-%m-%d_%H-%M-%S")}'
 
-                self.wandb_name = validate_wandb_name(project_name=conf['name'], name=w_name)
+                self.wandb_name = validate_wandb_name(
+                    project_name=conf['name'], name=w_name)
 
                 if self.wandb_name != w_name:
-                    self.logger.warning(f"Run {w_name} already exists. Using name {self.wandb_name} instead.")
+                    self.logger.warning(
+                        f"Run {w_name} already exists. Using name {self.wandb_name} instead.")
 
-            wandb_settings = wandb.Settings(silent="true") if not self.verbose else None
+            wandb_settings = wandb.Settings(
+                silent="true") if not self.verbose else None
 
             wandb_path = os.path.join(PROJECT_PATH, '.wandb')
             os.makedirs(wandb_path, exist_ok=True)
@@ -116,7 +121,8 @@ class Logger:
 
             self.log(f"Using run_id {self.run_id}")
 
-            self.ckpt_path = os.path.join(PROJECT_PATH, "checkpoints", self.wandb_name)
+            self.ckpt_path = os.path.join(
+                PROJECT_PATH, "checkpoints", self.wandb_name)
             os.makedirs(self.ckpt_path, exist_ok=True)
 
     def log(self, message, verbose=None, level: int = logging.INFO):
@@ -157,7 +163,8 @@ class Logger:
 
     def load_checkpoint(self, fname="ckpt.pt"):
         if self._use_wandb:
-            data_path = wandb.restore(fname, root=self.ckpt_path, replace=False)
+            data_path = wandb.restore(
+                fname, root=self.ckpt_path, replace=False)
             data_path = data_path.name
         else:
             data_path = fname
@@ -180,7 +187,8 @@ class Logger:
         with open(self.log_path) as previous_log:
             for line in previous_log.readlines():
                 # Use re.sub to remove the timestamp and hyphen if the pattern is found
-                print(re.sub(pattern, '', line) if re.match(pattern, line) else line)
+                print(re.sub(pattern, '', line)
+                      if re.match(pattern, line) else line)
 
 
 if __name__ == '__main__':

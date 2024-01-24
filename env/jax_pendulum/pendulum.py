@@ -37,7 +37,8 @@ class JaxPendulum(JaxBaseEnv):
             "m": jnp.array([0.1, 0.1])[:self.n],
             "I": jnp.array([0.1/12, 0.1/12])[:self.n],
             "l": jnp.array([1, 1])[:self.n],
-            "lc": jnp.array([0.5, 0.5])[:self.n],  # center of mass of each link (distance from joint)
+            # center of mass of each link (distance from joint)
+            "lc": jnp.array([0.5, 0.5])[:self.n],
             "g": jnp.array([0.0, 0.0]),
             # "g": jnp.array([0.0, -9.81]),
         }
@@ -49,7 +50,8 @@ class JaxPendulum(JaxBaseEnv):
                                         f"pendulum_nl-{num_links}.dill")
 
         # Jax backbone functions
-        forward_kinematics_fn, self._dynamical_matrices_fn = pendulum.factory(sym_exp_filepath)
+        forward_kinematics_fn, self._dynamical_matrices_fn = pendulum.factory(
+            sym_exp_filepath)
         self._batched_forward_kinematics_fn = vmap(
             forward_kinematics_fn, in_axes=(None, None, 0), out_axes=-1
         )
@@ -109,8 +111,10 @@ class JaxPendulum(JaxBaseEnv):
             if type(self._state) is not jnp.ndarray:
                 self._state = jnp.array(self._state)
         elif 'rand' in kwargs and kwargs['rand']:
-            initial_pos = np.random.uniform(-1, 1, size=(self.n,)) * self._pos_limit
-            initial_vel = np.random.uniform(-1, 1, size=(self.n,)) * self._vel_limit
+            initial_pos = np.random.uniform(-1,
+                                            1, size=(self.n,)) * self._pos_limit
+            initial_vel = np.random.uniform(-1,
+                                            1, size=(self.n,)) * self._vel_limit
             self._state = jnp.concatenate((initial_pos, initial_vel))
         else:
             # with 2 links it should be something like [q0, q1, q0_dot, q1_dot]
@@ -233,10 +237,12 @@ class JaxPendulum(JaxBaseEnv):
         return 0
 
     def get_reward(self, **kwargs):
-        upright = (np.array([np.cos(self._state[0]), np.cos(self._state[1])]) + 1) / 2
+        upright = (
+            np.array([np.cos(self._state[0]), np.cos(self._state[1])]) + 1) / 2
 
         ang_vel = self._state[self.n:]
-        small_velocity = rewards.tolerance(ang_vel, margin=self._vel_limit[0]).min()
+        small_velocity = rewards.tolerance(
+            ang_vel, margin=self._vel_limit[0]).min()
         small_velocity = (1 + small_velocity) / 2
 
         reward = upright.mean() * small_velocity
@@ -281,11 +287,13 @@ class JaxPendulum(JaxBaseEnv):
         # poses along the robot of shape (3, N)
         chi_ls = self.cartesian_from_obs().T
 
-        curve_origin = np.array([w // 2, h // 2], dtype=np.int32)  # in x-y pixel coordinates
+        # in x-y pixel coordinates
+        curve_origin = np.array([w // 2, h // 2], dtype=np.int32)
 
         # transform robot poses to pixel coordinates
         # should be of shape (N, 2)
-        curve = np.array((curve_origin + chi_ls[:2, :].T * ppm), dtype=np.int32)
+        curve = np.array(
+            (curve_origin + chi_ls[:2, :].T * ppm), dtype=np.int32)
         curve[:, 1] = h - curve[:, 1]  # invert the v pixel coordinate
         # curve = np.flip(curve, axis=1)
 
@@ -298,10 +306,13 @@ class JaxPendulum(JaxBaseEnv):
             pred = self.obs_to_state(np.asarray(pred))
             chi_ls_pred = self.cartesian_from_obs(obs=pred).T
 
-            curve_pred = np.array((curve_origin + chi_ls_pred[:2, :].T * ppm), dtype=np.int32)
+            curve_pred = np.array(
+                (curve_origin + chi_ls_pred[:2, :].T * ppm), dtype=np.int32)
             curve_pred[:, 1] = h - curve_pred[:, 1]
-            pygame.draw.lines(self._screen, pred_r_color, False, curve_pred, 10)
-            pygame.draw.circle(self._screen, pred_t_color, curve_pred[-1, :], 6)
+            pygame.draw.lines(self._screen, pred_r_color,
+                              False, curve_pred, 10)
+            pygame.draw.circle(self._screen, pred_t_color,
+                               curve_pred[-1, :], 6)
 
         # draw the goal
         self._draw_goal(curve_origin, ppm, goal_color)

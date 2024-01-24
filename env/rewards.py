@@ -41,11 +41,11 @@ def _sigmoids(x, value_at_1, sigmoid):
     if sigmoid in ('cosine', 'linear', 'quadratic'):
         if not 0 <= value_at_1 < 1:
             raise ValueError('`value_at_1` must be nonnegative and smaller than 1, '
-                                             'got {}.'.format(value_at_1))
+                             'got {}.'.format(value_at_1))
     else:
         if not 0 < value_at_1 < 1:
             raise ValueError('`value_at_1` must be strictly between 0 and 1, '
-                                             'got {}.'.format(value_at_1))
+                             'got {}.'.format(value_at_1))
 
     if sigmoid == 'gaussian':
         scale = np.sqrt(-2 * np.log(value_at_1))
@@ -68,7 +68,7 @@ def _sigmoids(x, value_at_1, sigmoid):
         scaled_x = x*scale
         with warnings.catch_warnings():
             warnings.filterwarnings(
-                    action='ignore', message='invalid value encountered in cos')
+                action='ignore', message='invalid value encountered in cos')
             cos_pi_scaled_x = np.cos(np.pi*scaled_x)
         return np.where(abs(scaled_x) < 1, (1 + cos_pi_scaled_x)/2, 0.0)
 
@@ -91,7 +91,7 @@ def _sigmoids(x, value_at_1, sigmoid):
 
 
 def tolerance(x, bounds=(0.0, 0.0), margin=0.0, sigmoid='gaussian',
-                            value_at_margin=_DEFAULT_VALUE_AT_MARGIN):
+              value_at_margin=_DEFAULT_VALUE_AT_MARGIN):
     """Returns 1 when `x` falls inside the bounds, between 0 and 1 otherwise.
 
     Args:
@@ -130,7 +130,7 @@ def tolerance(x, bounds=(0.0, 0.0), margin=0.0, sigmoid='gaussian',
         value = np.where(in_bounds, 1.0, 0.0)
     else:
         d = np.where(x < lower, lower - x, x - upper) / margin
-        value = np.where(in_bounds, 1.0, _sigmoids(d, value_at_margin, sigmoid))
+        value = np.where(in_bounds, 1.0, _sigmoids(
+            d, value_at_margin, sigmoid))
 
     return float(value) if np.isscalar(x) else value
-

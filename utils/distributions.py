@@ -22,7 +22,8 @@ class FlippedGaussian(rv_continuous):
 
         f0 = exp(-(mu**2)/(2*sigma**2))
 
-        num = theta + (c / (sigma * 2 * pi)) * (f0 - exp(-(x - mu)**2/(2 * sigma**2)))
+        num = theta + (c / (sigma * 2 * pi)) * \
+            (f0 - exp(-(x - mu)**2/(2 * sigma**2)))
         den = (2*theta
                + erf(sqrt(2)*mu/(2*sigma) - sqrt(2)/(2*sigma))/2
                - erf(sqrt(2)*mu/(2*sigma) + sqrt(2)/(2*sigma))/2
@@ -53,4 +54,3 @@ class CustomDistribution(rv_continuous):
             return a*x + b
         else:
             return 0
-

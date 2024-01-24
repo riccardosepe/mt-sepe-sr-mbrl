@@ -22,7 +22,8 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 def create_background(width, height):
     background = pygame.Surface((width, height))
-    pygame.draw.rect(background, (255, 255, 204), pygame.Rect(0, 0, width, height))
+    pygame.draw.rect(background, (255, 255, 204),
+                     pygame.Rect(0, 0, width, height))
     return background
 
 

@@ -54,7 +54,8 @@ def get_conf(argv, main=True):
         with open(f"setup/{config_file}") as f:
             config = yaml.safe_load(f)
     except FileNotFoundError:
-        print(f"Error: file {config_file} not found. Is it in the folder `{PROJECT_PATH}/setup`?")
+        print(
+            f"Error: file {config_file} not found. Is it in the folder `{PROJECT_PATH}/setup`?")
         exit(-1)
 
     # config['config_file'] = config_file

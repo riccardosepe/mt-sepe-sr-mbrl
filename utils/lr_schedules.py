@@ -8,7 +8,8 @@ class WarmupCosineScheduler(LRScheduler):
         self.warmup_epochs = warmup_epochs
         self.max_epochs = max_epochs
         self.eta_min = eta_min
-        super(WarmupCosineScheduler, self).__init__(optimizer, last_epoch, verbose)
+        super(WarmupCosineScheduler, self).__init__(
+            optimizer, last_epoch, verbose)
 
     def get_lr(self):
         if self.last_epoch < self.warmup_epochs:

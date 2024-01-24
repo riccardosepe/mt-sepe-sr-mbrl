@@ -16,14 +16,20 @@ __all__ = ['rollout_error']
 def _end_effector_plot(data, total_length):
     time = data['time']
     fig, ax = plt.subplots(3, 1, figsize=(10, 10))
-    ax[0].plot(time, data['x_pred'], label='x_pred', color='red', linestyle='--')
-    ax[0].plot(time, data['x_gt'], label='x_gt', color='red', linestyle='solid')
+    ax[0].plot(time, data['x_pred'], label='x_pred',
+               color='red', linestyle='--')
+    ax[0].plot(time, data['x_gt'], label='x_gt',
+               color='red', linestyle='solid')
 
-    ax[1].plot(time, data['y_pred'], label='y_pred', color='blue', linestyle='--')
-    ax[1].plot(time, data['y_gt'], label='y_gt', color='blue', linestyle='solid')
+    ax[1].plot(time, data['y_pred'], label='y_pred',
+               color='blue', linestyle='--')
+    ax[1].plot(time, data['y_gt'], label='y_gt',
+               color='blue', linestyle='solid')
 
-    ax[2].plot(time, np.array(data['e_x']) / total_length, label='e_x', color='red', linestyle='solid')
-    ax[2].plot(time, np.array(data['e_y']) / total_length, label='e_y', color='blue', linestyle='solid')
+    ax[2].plot(time, np.array(data['e_x']) / total_length,
+               label='e_x', color='red', linestyle='solid')
+    ax[2].plot(time, np.array(data['e_y']) / total_length,
+               label='e_y', color='blue', linestyle='solid')
     ax[2].get_xaxis().set_visible(True)
 
     ax[0].set_title('x')
@@ -62,9 +68,11 @@ def rollout_plots(env, data, logger, obs_gt_list, obs_pred_list, state_space_bou
     else:
         fig1 = _end_effector_plot(data, env.total_length)
         if env.name == 'jax_pendulum':
-            fig2 = _pendulum_obs_plots(data, obs_gt_list, obs_pred_list, state_space_bounds)
+            fig2 = _pendulum_obs_plots(
+                data, obs_gt_list, obs_pred_list, state_space_bounds)
         else:
-            fig2 = _sr_obs_plots(data, obs_gt_list, obs_pred_list, state_space_bounds, env.strains, env.num_segments)
+            fig2 = _sr_obs_plots(data, obs_gt_list, obs_pred_list,
+                                 state_space_bounds, env.strains, env.num_segments)
 
         fig1.suptitle('End effector plots')
         fig2.suptitle('Observation plots')
@@ -91,21 +99,28 @@ def _sr_obs_plots(data, obs_gt_list, obs_pred_list, state_space_bounds, strains,
     for i in range(3):
         if not bool(strains[i]):
             continue
-        ax[j, 0].plot(time, obs_gt_list[:, j], label=f'{strain_names[i]}_gt', color=colors[i], linestyle='solid')
-        ax[j, 0].plot(time, obs_pred_list[:, j], label=f'{strain_names[i]}_pred', color=colors[i], linestyle='--')
+        ax[j, 0].plot(time, obs_gt_list[:, j],
+                      label=f'{strain_names[i]}_gt', color=colors[i], linestyle='solid')
+        ax[j, 0].plot(time, obs_pred_list[:, j],
+                      label=f'{strain_names[i]}_pred', color=colors[i], linestyle='--')
         ax[j, 0].legend()
         ax[j, 0].set_title(f'{strain_names[i]}')
 
-        ax[j, 1].plot(time, obs_gt_list[:, j+num_strains], label=f'{strain_names[i]}_vel_gt', color=colors[i], linestyle='solid')
-        ax[j, 1].plot(time, obs_pred_list[:, j+num_strains], label=f'{strain_names[i]}_vel_pred', color=colors[i], linestyle='--')
+        ax[j, 1].plot(time, obs_gt_list[:, j+num_strains],
+                      label=f'{strain_names[i]}_vel_gt', color=colors[i], linestyle='solid')
+        ax[j, 1].plot(time, obs_pred_list[:, j+num_strains],
+                      label=f'{strain_names[i]}_vel_pred', color=colors[i], linestyle='--')
         ax[j, 1].legend()
         ax[j, 1].set_title(f'{strain_names[i]}_vel')
 
         err = np.abs(obs_gt_list[:, j]-obs_pred_list[:, j])
-        err_vel = np.abs(obs_gt_list[:, j+num_strains]-obs_pred_list[:, j+num_strains])
+        err_vel = np.abs(
+            obs_gt_list[:, j+num_strains]-obs_pred_list[:, j+num_strains])
 
-        ax[num_strains, 0].plot(time, err, label=f'abs_err_{strain_names[i]}', color=colors[i], linestyle='solid')
-        ax[num_strains, 1].plot(time, err_vel, label=f'abs_err_{strain_names[i]}_vel', color=colors[i], linestyle='solid')
+        ax[num_strains, 0].plot(
+            time, err, label=f'abs_err_{strain_names[i]}', color=colors[i], linestyle='solid')
+        ax[num_strains, 1].plot(
+            time, err_vel, label=f'abs_err_{strain_names[i]}_vel', color=colors[i], linestyle='solid')
 
         j += 1
 
@@ -131,28 +146,40 @@ def _pendulum_obs_plots(data, obs_gt_list, obs_pred_list, state_space_bounds):
     colors = distinctipy.get_colors(num_links, pastel_factor=0.7)
 
     for i in range(num_links):
-        ax[i, 0].plot(time, obs_gt_list[:, i*num_links], label=f'cos(q_{i})_gt [rad]', color=colors[i], linestyle='solid')
-        ax[i, 0].plot(time, obs_pred_list[:, i*num_links], label=f'cos(q_{i})_pred  [rad]', color=colors[i], linestyle='--')
+        ax[i, 0].plot(time, obs_gt_list[:, i*num_links],
+                      label=f'cos(q_{i})_gt [rad]', color=colors[i], linestyle='solid')
+        ax[i, 0].plot(time, obs_pred_list[:, i*num_links],
+                      label=f'cos(q_{i})_pred  [rad]', color=colors[i], linestyle='--')
         ax[i, 0].legend()
         ax[i, 0].set_title(f'cos(q_{i})')
 
-        ax[i, 1].plot(time, obs_gt_list[:, i*num_links+1], label=f'sin(q_{i})_gt [rad]', color=colors[i], linestyle='solid')
-        ax[i, 1].plot(time, obs_pred_list[:, i*num_links+1], label=f'sin(q_{i})_pred [rad]', color=colors[i], linestyle='--')
+        ax[i, 1].plot(time, obs_gt_list[:, i*num_links+1],
+                      label=f'sin(q_{i})_gt [rad]', color=colors[i], linestyle='solid')
+        ax[i, 1].plot(time, obs_pred_list[:, i*num_links+1],
+                      label=f'sin(q_{i})_pred [rad]', color=colors[i], linestyle='--')
         ax[i, 1].legend()
         ax[i, 1].set_title(f'sin(q_{i})')
 
-        ax[i, 2].plot(time, obs_gt_list[:, 2*num_links+i], label=f'q_dot_{i}_gt [rad/s]', color=colors[i], linestyle='solid')
-        ax[i, 2].plot(time, obs_pred_list[:, 2*num_links+i], label=f'q_dot_{i}_pred [rad/s]', color=colors[i], linestyle='--')
+        ax[i, 2].plot(time, obs_gt_list[:, 2*num_links+i],
+                      label=f'q_dot_{i}_gt [rad/s]', color=colors[i], linestyle='solid')
+        ax[i, 2].plot(time, obs_pred_list[:, 2*num_links+i],
+                      label=f'q_dot_{i}_pred [rad/s]', color=colors[i], linestyle='--')
         ax[i, 2].legend()
         ax[i, 2].set_title(f'q_dot_{i}')
 
-        err_cos = np.abs(obs_gt_list[:, i*num_links]-obs_pred_list[:, i*num_links])
-        err_sin = np.abs(obs_gt_list[:, i*num_links+1]-obs_pred_list[:, i*num_links+1])
-        err_vel = np.abs(obs_gt_list[:, 2*num_links+i]-obs_pred_list[:, 2*num_links+i])
+        err_cos = np.abs(obs_gt_list[:, i*num_links] -
+                         obs_pred_list[:, i*num_links])
+        err_sin = np.abs(
+            obs_gt_list[:, i*num_links+1]-obs_pred_list[:, i*num_links+1])
+        err_vel = np.abs(
+            obs_gt_list[:, 2*num_links+i]-obs_pred_list[:, 2*num_links+i])
 
-        ax[num_links, 0].plot(time, err_cos, label=f'abs_err_cos(q_{i})', color=colors[i], linestyle='solid')
-        ax[num_links, 1].plot(time, err_sin, label=f'abs_err_sin(q_{i})', color=colors[i], linestyle='solid')
-        ax[num_links, 2].plot(time, err_vel, label=f'abs_err_q_dot_{i}', color=colors[i], linestyle='solid')
+        ax[num_links, 0].plot(
+            time, err_cos, label=f'abs_err_cos(q_{i})', color=colors[i], linestyle='solid')
+        ax[num_links, 1].plot(
+            time, err_sin, label=f'abs_err_sin(q_{i})', color=colors[i], linestyle='solid')
+        ax[num_links, 2].plot(
+            time, err_vel, label=f'abs_err_q_dot_{i}', color=colors[i], linestyle='solid')
 
     ax[num_links, 0].legend()
     ax[num_links, 1].legend()
@@ -215,7 +242,8 @@ def rollout_error(model: torch.nn.Module,
         act = torch.tensor(const_action * action_scale)[None].to(device)
         for _ in range(action_repeat):
             # Here keeping action repeat as an explicit loop in order to collect more samples and have smoother plots
-            obs_gt, _, done = env.step(const_action, 1, only_trunc=True, time_limit=False)
+            obs_gt, _, done = env.step(
+                const_action, 1, only_trunc=True, time_limit=False)
             pbar.update(1)
             try:
                 # Also here keeping action repeat as an explicit loop
@@ -231,7 +259,7 @@ def rollout_error(model: torch.nn.Module,
                     done = True
                     print("Breaking for infeasible state")
                     break
-                if(torch.abs(obs_pred[:, -n:]) > 10*obs_space_bounds[-n:]).any():
+                if (torch.abs(obs_pred[:, -n:]) > 10*obs_space_bounds[-n:]).any():
                     done = True
                     print("Breaking for infeasible velocity")
                     break
@@ -240,7 +268,8 @@ def rollout_error(model: torch.nn.Module,
             cartesian_gt = env.cartesian_from_obs(obs_gt, numpy=True)
             ee_gt = cartesian_gt[-1, :]
 
-            cartesian_pred = env.cartesian_from_obs(obs_pred.squeeze(), numpy=True)
+            cartesian_pred = env.cartesian_from_obs(
+                obs_pred.squeeze(), numpy=True)
             ee_pred = cartesian_pred[-1, :]
 
             time.append(env.time)
@@ -273,7 +302,8 @@ def rollout_error(model: torch.nn.Module,
     }
 
     if return_plots:
-        fig1, fig2 = rollout_plots(env, data, model.logger, obs_gt_list, obs_pred_list, obs_space_bounds)
+        fig1, fig2 = rollout_plots(
+            env, data, model.logger, obs_gt_list, obs_pred_list, obs_space_bounds)
         return {
             'step': step,
             'rollout/ee': wandb.Image(fig1),

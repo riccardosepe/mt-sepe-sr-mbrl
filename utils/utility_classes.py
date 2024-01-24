@@ -63,7 +63,8 @@ class ReplayBuffer:
         import matplotlib.pyplot as plt
         states = np.array([np.array(s[0]) for s in self.buffer])
         if states.shape[1] != 6:
-            raise ValueError(f"States have shape {states.shape} instead of (N, 6)")
+            raise ValueError(
+                f"States have shape {states.shape} instead of (N, 6)")
         fig, axs = plt.subplots(3, 2, figsize=(15, 10))
         for i in range(6):
             axs[i % 3, i // 3].hist(states[:, i], bins=20)
@@ -152,9 +153,11 @@ class NormalizerLoss(Module):
             idx = slice(None)
         else:
             try:
-                idx = get_strain_indices(self.num_segments, strain, self.strains)
+                idx = get_strain_indices(
+                    self.num_segments, strain, self.strains)
             except AttributeError:
-                raise RuntimeError(f"Environment {self.env_name} does not support strains")
+                raise RuntimeError(
+                    f"Environment {self.env_name} does not support strains")
 
         return torch.sum(losses / self.divider[idx])
 
@@ -227,11 +230,15 @@ class WandbRecorderCallback(BaseCallback):
         # self.n_eval_calls += 1
         # current_timestep = self.n_eval_calls*self.child_eval_freq
         # current_timestep = self.parent.n_calls
-        current_timestep = self.num_timesteps  # this number is multiplied by the number of parallel envs
-        wandb.log({"train_mean_reward"+self.wandb_loss_suffix: last_mean_reward, "timestep": current_timestep})
+        # this number is multiplied by the number of parallel envs
+        current_timestep = self.num_timesteps
+        wandb.log({"train_mean_reward"+self.wandb_loss_suffix: last_mean_reward,
+                  "timestep": current_timestep})
 
-        rollout_rewards = [ep_info['r'] for ep_info in self.model.ep_info_buffer]
-        wandb.log({"rollout_rewards"+self.wandb_loss_suffix: safe_mean(rollout_rewards), "timestep": current_timestep})
+        rollout_rewards = [ep_info['r']
+                           for ep_info in self.model.ep_info_buffer]
+        wandb.log({"rollout_rewards"+self.wandb_loss_suffix: safe_mean(
+            rollout_rewards), "timestep": current_timestep})
 
         if self.save_checkpoint:
             print(f"Saving model to {self._path}")

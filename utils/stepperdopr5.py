@@ -149,7 +149,8 @@ class OdeInt:
         self.dense = outt.dense
         self.out = outt
         self.derivs = derivss
-        self.s = StepperDopr5(self.y, self.dydx, self.x, atol, rtol, self.dense)
+        self.s = StepperDopr5(self.y, self.dydx, self.x,
+                              atol, rtol, self.dense)
         self.EPS = sys.float_info.min
         self.h = sign(h1, self.x2 - self.x1)
         for i in range(self.nvar):
@@ -327,19 +328,24 @@ class StepperDopr5(StepperBase):
 
         self.k4 = derivs(self.x + c4 * h, ytemp).clone()
 
-        ytemp = self.y + h * (a51 * self.dydx + a52 * self.k2 + a53 * self.k3 + a54 * self.k4)
+        ytemp = self.y + h * (a51 * self.dydx + a52 *
+                              self.k2 + a53 * self.k3 + a54 * self.k4)
 
         self.k5 = derivs(self.x + c5 * h, ytemp).clone()
 
-        ytemp = self.y + h * (a61 * self.dydx + a62 * self.k2 + a63 * self.k3 + a64 * self.k4 + a65 * self.k5)
+        ytemp = self.y + h * (a61 * self.dydx + a62 * self.k2 +
+                              a63 * self.k3 + a64 * self.k4 + a65 * self.k5)
 
         xph = self.x + h
         self.k6 = derivs(xph, ytemp).clone()
 
-        self.yout = self.y + h * (a71 * self.dydx + a73 * self.k3 + a74 * self.k4 + a75 * self.k5 + a76 * self.k6)
+        self.yout = self.y + h * \
+            (a71 * self.dydx + a73 * self.k3 + a74 *
+             self.k4 + a75 * self.k5 + a76 * self.k6)
 
         self.dydxnew = derivs(xph, self.yout).clone()
-        self.yerr = h * (e1 * self.dydx + e3 * self.k3 + e4 * self.k4 + e5 * self.k5 + e6 * self.k6 + e7 * self.dydxnew)
+        self.yerr = h * (e1 * self.dydx + e3 * self.k3 + e4 *
+                         self.k4 + e5 * self.k5 + e6 * self.k6 + e7 * self.dydxnew)
 
     def prepare_dense(self, h: float, derivs):
         pass
@@ -350,7 +356,8 @@ class StepperDopr5(StepperBase):
     def error(self):
         err = 0.
         for i in range(self.n):
-            sk = self.atol + self.rtol * max(torch.abs(self.y[i]), torch.abs(self.yout[i]))
+            sk = self.atol + self.rtol * \
+                max(torch.abs(self.y[i]), torch.abs(self.yout[i]))
             err += (self.yerr[i] / sk) ** 2
         return (err / self.n) ** 0.5
 
@@ -364,6 +371,7 @@ if __name__ == '__main__':
     t0 = 0.
     t1 = 1.
     out = Output()
-    odeint = OdeInt(y0, t0, t1, 1e-3, 1e-6, h1=1e-1, hminn=1e-2, outt=out, derivss=f)
+    odeint = OdeInt(y0, t0, t1, 1e-3, 1e-6, h1=1e-1,
+                    hminn=1e-2, outt=out, derivss=f)
     odeint.integrate()
     print(odeint.out)

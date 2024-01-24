@@ -149,14 +149,16 @@ def get_strain_indices(num_segments: int, requested_str: str, strains: tuple) ->
 
     Returns: A tuple which contains the requested indices
     """
-    assert len(strains) == 3, "The strains should always be a tuple of bits of length 3"
+    assert len(
+        strains) == 3, "The strains should always be a tuple of bits of length 3"
     assert requested_str in _STRAINS, f"The requested strain must be a string in {_STRAINS}"
     assert 0 < num_segments <= 2, "The segments can only be 1 or 2"
 
     requested = _STRAINS.index(requested_str)
 
     if not bool(strains[requested % 3]):
-        raise ValueError("The requested strain is not active in the current configuration.")
+        raise ValueError(
+            "The requested strain is not active in the current configuration.")
 
     n = 0
     for i, a in enumerate(reversed(strains)):

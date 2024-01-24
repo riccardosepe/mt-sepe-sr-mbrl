@@ -8,6 +8,7 @@ from torch.optim.lr_scheduler import StepLR, ExponentialLR
 
 from utils.utility_classes import NormalizerLoss
 
+
 def zip_strict(*iterables: Iterable) -> Iterable:
     r"""
     ``zip()`` function but enforces that iterables are of equal length.
@@ -43,7 +44,8 @@ def soft_update(src_net: nn.Module, dst_net: nn.Module, tau: float = 0.5) -> Non
         # zip does not raise an exception if length of parameters does not match.
         for param, target_param in zip_strict(dst_net.parameters(), src_net.parameters()):
             target_param.data.mul_(1 - tau)
-            torch.add(target_param.data, param.data, alpha=tau, out=target_param.data)
+            torch.add(target_param.data, param.data,
+                      alpha=tau, out=target_param.data)
 
 
 def get_device(device: Union[torch.device, str] = "auto") -> torch.device:
@@ -107,7 +109,8 @@ def get_loss_func(type_: str, normalized=True, **kwargs):
         elif type_ == 'l1':
             loss_func = nn.L1Loss()
         else:
-            raise NotImplementedError(f'{type_} loss function not implemented yet')
+            raise NotImplementedError(
+                f'{type_} loss function not implemented yet')
     return loss_func
 
 
@@ -115,7 +118,8 @@ def get_test_metric(type_: str):
     if type_ == 'l1':
         metric = torch.nn.functional.l1_loss
     else:
-        raise NotImplementedError(f'{type_} metric function not implemented yet')
+        raise NotImplementedError(
+            f'{type_} metric function not implemented yet')
     return metric
 
 

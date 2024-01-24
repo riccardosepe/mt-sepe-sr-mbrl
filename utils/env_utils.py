@@ -34,14 +34,17 @@ def make_env(**kwargs):
     elif name == "jax_pendulum":
         from environments.jax_pendulum.pendulum import JaxPendulum as Env
         if 'num_links' not in kwargs:
-            raise ValueError(f"Missing required parameter num_links in environment {name}")
+            raise ValueError(
+                f"Missing required parameter num_links in environment {name}")
 
     elif name == "planar_pcs":
         from environments.jax_planar_pcs.planar_pcs import PlanarPCS as Env
         if 'num_segments' not in kwargs:
-            raise ValueError(f"Missing required parameter num_segments in environment {name}")
+            raise ValueError(
+                f"Missing required parameter num_segments in environment {name}")
         if 'strains' not in kwargs:
-            raise ValueError(f"Missing required parameter strains in environment {name}")
+            raise ValueError(
+                f"Missing required parameter strains in environment {name}")
 
     elif name == "planar_hsa":
         from environments.jax_planar_hsa.planar_hsa import PlanarHSA as Env

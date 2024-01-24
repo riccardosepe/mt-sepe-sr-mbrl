@@ -34,7 +34,8 @@ class JaxBaseEnv(metaclass=ABCMeta):
 
         self._total_length = 0.
 
-        self._instants_per_step = int(self._dt_sample / self._dt)  # TODO: if this isn't integer?
+        # TODO: if this isn't integer?
+        self._instants_per_step = int(self._dt_sample / self._dt)
 
         assert self._instants_per_step >= 1
 
@@ -197,10 +198,12 @@ class JaxBaseEnv(metaclass=ABCMeta):
                 self._state = jnp.array(self._state)
         elif 'rand' in kwargs:
             initial_pos = np.random.uniform(low=-1, high=1, size=self.n)
-            self._state = jnp.concatenate((jnp.array(initial_pos * self._pos_limit), jnp.zeros(self.n, )))
+            self._state = jnp.concatenate(
+                (jnp.array(initial_pos * self._pos_limit), jnp.zeros(self.n, )))
         else:
             initial_pos = np.random.uniform(low=-0.01, high=0.01, size=self.n)
-            self._state = jnp.concatenate((jnp.array(initial_pos * self._pos_limit), jnp.zeros(self.n, )))
+            self._state = jnp.concatenate(
+                (jnp.array(initial_pos * self._pos_limit), jnp.zeros(self.n, )))
 
     @abstractmethod
     def get_obs(self) -> np.ndarray:
@@ -314,14 +317,16 @@ class JaxBaseEnv(metaclass=ABCMeta):
         # Draw the box
         box_width, box_height = 680, 50
         box_x, box_y = self._screen_width - box_width - 10, 10
-        pygame.draw.rect(self._screen, (255, 255, 255), (box_x, box_y, box_width, box_height))
+        pygame.draw.rect(self._screen, (255, 255, 255),
+                         (box_x, box_y, box_width, box_height))
 
         # Draw the text in the box
         string = (caption['name'] + ': ' +
                   np.array2string(np.array(caption['value']), precision=4, suppress_small=True))
         text = font.render(string, True, (0, 0, 0))
         text_rect = text.get_rect()
-        text_rect.topleft = (box_x + 10, box_y + 10)  # Position the text inside the box
+        # Position the text inside the box
+        text_rect.topleft = (box_x + 10, box_y + 10)
         self._screen.blit(text, text_rect)
 
     def _add_interactive_button(self):
@@ -329,14 +334,17 @@ class JaxBaseEnv(metaclass=ABCMeta):
         This function adds a button to reset the environment in the bottom right corner of the screen.
         """
         button_width, button_height = 100, 50
-        button_x, button_y = self._screen_width - button_width - 10, self._screen_height - button_height - 10
+        button_x, button_y = self._screen_width - button_width - \
+            10, self._screen_height - button_height - 10
         # draw button yellow
-        pygame.draw.rect(self._screen, (255, 255, 0), (button_x, button_y, button_width, button_height))
+        pygame.draw.rect(self._screen, (255, 255, 0),
+                         (button_x, button_y, button_width, button_height))
         font = pygame.font.Font(None, 30)
         # add text of red color
         text = font.render('Reset', True, (255, 0, 0))
         text_rect = text.get_rect()
-        text_rect.topleft = (button_x + 10, button_y + 10)  # Position the text inside the box
+        # Position the text inside the box
+        text_rect.topleft = (button_x + 10, button_y + 10)
         self._screen.blit(text, text_rect)
         # check if the button is pressed
         mouse_pos = pygame.mouse.get_pos()
@@ -375,8 +383,10 @@ class JaxBaseEnv(metaclass=ABCMeta):
         text_x = circle_center[0] - text_width / 2
         text_y = circle_center[1] - text_height / 2
 
-        pygame.draw.circle(self._screen, circle_color, circle_center, circle_radius)
-        pygame.draw.circle(self._screen, (0, 0, 0), circle_center, circle_radius, 2)
+        pygame.draw.circle(self._screen, circle_color,
+                           circle_center, circle_radius)
+        pygame.draw.circle(self._screen, (0, 0, 0),
+                           circle_center, circle_radius, 2)
         text_surface = font.render(text, True, (0, 0, 0))
         self._screen.blit(text_surface, (text_x, text_y))
 
