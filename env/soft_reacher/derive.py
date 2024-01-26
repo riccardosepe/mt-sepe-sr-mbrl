@@ -1,10 +1,16 @@
 import time
 
-import cloudpickle
 import dill as pickle
 from sympy import Symbol, Matrix, symbols, pi, cos, sin, simplify, integrate, Ne, Eq, diag, Array, zeros, lambdify
 
 pickle.settings['recurse'] = True
+
+
+# function to convert a value of seconds to a string of format "minutes: mm, seconds: ss.milliseconds"
+def sec_to_min(seconds):
+    minutes = int(seconds // 60)
+    seconds = seconds % 60
+    return f"{minutes}min, {seconds:.2f}s"
 
 
 def derive():
@@ -57,13 +63,22 @@ def derive():
     dp_ds = R @ Matrix([sigma_x, sigma_y])
     p = simplify(integrate(dp_ds, (s, 0.0, s))).subs(Ne(q1, -bend_offset), True).subs(Eq(q1, -bend_offset), False)
 
+    # symbolic expression for the pose in the current segment as a function of the point s
+    chi = Matrix([*p, th])
+    chi_lambda = lambdify(
+        [tuple([th0, r, bend_offset, q1, q2, q3]), s],
+        chi,
+        'numpy',
+        cse=True
+    )
+
     Jp = simplify(p.jacobian(q_orig))
     Jo = simplify(Matrix([[th]]).jacobian(q_orig))
 
     dB_ds = simplify(rho * A * Jp.T @ Jp + rho * I * Jo.T @ Jo)
     B = simplify(integrate(dB_ds, (s, 0, l))).subs(Ne(q1, -bend_offset), True).subs(Eq(q1, -bend_offset), False)
 
-    print(f"Computed B in {time.time() - t:.2f}s")
+    print(f"Computed B in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     # compute the Christoffel symbols
@@ -87,7 +102,7 @@ def derive():
                 C[i, j] = C[i, j] + Ch[i, j, k] * qdot[k]
     C = simplify(C)
 
-    print(f"Computed C in {time.time() - t:.2f}s")
+    print(f"Computed C in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     dU_ds = simplify(rho * A * g.T @ p)
@@ -96,7 +111,7 @@ def derive():
     # compute the gravity force vector
     G = simplify(-U.jacobian(q_orig).transpose())
 
-    print(f"Computed G in {time.time() - t:.2f}s")
+    print(f"Computed G in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     # Use directly all three strains
@@ -113,7 +128,7 @@ def derive():
     K = S
     K = K @ (q - q_rest - q_offset)
 
-    print(f"Computed K in {time.time() - t:.2f}s")
+    print(f"Computed K in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     a11 = simplify(B[2, 2] * B[1, 1] - B[1, 2] ** 2)
@@ -133,7 +148,7 @@ def derive():
 
     Minv = simplify(Minv)
 
-    print(f"Inverted M in {time.time() - t:.2f}s")
+    print(f"Inverted M in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     coriolis_term = C * qdot
@@ -145,14 +160,14 @@ def derive():
     qddot = Minv * right_term
     F = Matrix([qdot, qddot])
 
-    print(f"Computed F in {time.time() - t:.2f}s")
+    print(f"Computed F in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     # Hamiltonian
     T = 0.5 * qdot.T @ B @ qdot
     H = T + U
 
-    print(f"Computed H in {time.time() - t:.2f}s")
+    print(f"Computed H in {sec_to_min(time.time() - t)}")
     t = time.time()
 
     # Jacobian of forward dynamics
@@ -160,7 +175,7 @@ def derive():
     F_s = F.jacobian(state)
     F_a = F.jacobian(tau)
 
-    print(f"Computed D in {time.time() - t:.2f}s")
+    print(f"Computed D in {sec_to_min(time.time() - t)}")
 
     F_lambda = lambdify(
         [tuple([th0, rho, l, r, gy, E, mu, d11, d22, d33, bend_offset, q1, q2, q3, q1dot, q2dot, q3dot, a1, a2, a3])],
@@ -183,12 +198,13 @@ def derive():
         cse=True
     )
 
-
-
     with open("./env/soft_reacher/dynamics.p", "wb") as outf:
-        cloudpickle.dump({'H': H_lambda, 'F': F_lambda, 'D': D_lambda}, outf)
+        pickle.dump({'H': H_lambda, 'F': F_lambda, 'D': D_lambda}, outf)
 
-    print(f"Done in {time.time() - t0:.2f}s")
+    with open("./env/soft_reacher/chi.p", "wb") as outf:
+        pickle.dump(chi_lambda, outf)
+
+    print(f"Done in {sec_to_min(time.time() - t)}")
 
 
 def check():
@@ -206,6 +222,11 @@ def check():
     print(H([*inertial_params, eps, *s]))
     print(F([*inertial_params, eps, *s, *a]))
     print(D([*inertial_params, eps, *s, *a]))
+
+    with open("./env/soft_reacher/chi.p", "rb") as inf:
+        chi = pickle.load(inf)
+
+    print(chi([0, 2e-2, eps, *q], 0.5))
 
 
 if __name__ == "__main__":
