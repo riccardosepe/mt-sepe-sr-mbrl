@@ -12,7 +12,7 @@ def derive():
     num_dof = 3  # bend, shear, axial for 1 segment
 
     print("Initializing...")
-    t = time.time()
+    t = t0 = time.time()
 
     # Define symbolic physical parameters
     th0 = Symbol("θ₀", real=True)  # initial angle of the robot
@@ -63,7 +63,8 @@ def derive():
     dB_ds = simplify(rho * A * Jp.T @ Jp + rho * I * Jo.T @ Jo)
     B = simplify(integrate(dB_ds, (s, 0, l))).subs(Ne(q1, -bend_offset), True).subs(Eq(q1, -bend_offset), False)
 
-    print("Computed B")
+    print(f"Computed B in {time.time() - t:.2f}s")
+    t = time.time()
 
     # compute the Christoffel symbols
     Ch_flat = []
@@ -86,7 +87,8 @@ def derive():
                 C[i, j] = C[i, j] + Ch[i, j, k] * qdot[k]
     C = simplify(C)
 
-    print("Computed C")
+    print(f"Computed C in {time.time() - t:.2f}s")
+    t = time.time()
 
     dU_ds = simplify(rho * A * g.T @ p)
     U = simplify(integrate(dU_ds, (s, 0, l))).subs(Ne(q1, -bend_offset), True).subs(Eq(q1, -bend_offset), False)
@@ -94,7 +96,8 @@ def derive():
     # compute the gravity force vector
     G = simplify(-U.jacobian(q_orig).transpose())
 
-    print("Computed G")
+    print(f"Computed G in {time.time() - t:.2f}s")
+    t = time.time()
 
     # Use directly all three strains
     # In this way, the strain basis is the Identity matrix
@@ -109,6 +112,9 @@ def derive():
     # we define the elastic matrix of shape (n_xi, n_xi) as K(xi) = K @ xi where K is equal to
     K = S
     K = K @ (q - q_rest - q_offset)
+
+    print(f"Computed K in {time.time() - t:.2f}s")
+    t = time.time()
 
     a11 = simplify(B[2, 2] * B[1, 1] - B[1, 2] ** 2)
     a12 = simplify(B[0, 2] * B[1, 2] - B[2, 2] * B[0, 1])
@@ -127,7 +133,8 @@ def derive():
 
     Minv = simplify(Minv)
 
-    print("Inverted M")
+    print(f"Inverted M in {time.time() - t:.2f}s")
+    t = time.time()
 
     coriolis_term = C * qdot
     coriolis_term = simplify(coriolis_term)
@@ -138,20 +145,22 @@ def derive():
     qddot = Minv * right_term
     F = Matrix([qdot, qddot])
 
-    print("Computed F")
+    print(f"Computed F in {time.time() - t:.2f}s")
+    t = time.time()
 
     # Hamiltonian
     T = 0.5 * qdot.T @ B @ qdot
     H = T + U
 
-    print("Computed H")
+    print(f"Computed H in {time.time() - t:.2f}s")
+    t = time.time()
 
     # Jacobian of forward dynamics
     state = Matrix([q1, q2, q3, q1dot, q2dot, q3dot])
     F_s = F.jacobian(state)
     F_a = F.jacobian(tau)
 
-    print("Computed D")
+    print(f"Computed D in {time.time() - t:.2f}s")
 
     F_lambda = lambdify(
         [tuple([th0, rho, l, r, gy, E, mu, d11, d22, d33, bend_offset, q1, q2, q3, q1dot, q2dot, q3dot, a1, a2, a3])],
@@ -179,7 +188,7 @@ def derive():
     with open("./env/soft_reacher/dynamics.p", "wb") as outf:
         cloudpickle.dump({'H': H_lambda, 'F': F_lambda, 'D': D_lambda}, outf)
 
-    print("Done")
+    print(f"Done in {time.time() - t0:.2f}s")
 
 
 def check():
