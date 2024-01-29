@@ -128,6 +128,13 @@ class SoftReacher(BaseEnv):
         pygame.draw.lines(self.screen, robot_color, False, curve, 10)
         pygame.draw.circle(self.screen, tip_color, curve[-1, :], 6)
 
+        # draw goal
+        # goal color: green
+        goal_color = (0, 255, 0)
+        goal_pos = curve_origin + self._goal * ppm
+        goal_pos[1] = h - goal_pos[1]
+        pygame.draw.circle(self.screen, goal_color, goal_pos, 6)
+
 
 if __name__ == '__main__':
     while os.getcwd().split('/')[-1] != "Physics_Informed_Model_Based_RL":
