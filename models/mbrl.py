@@ -116,6 +116,15 @@ class lnn(torch.nn.Module):
             self.fc2_V = torch.nn.Linear(64, 64)
             self.fc3_V = torch.nn.Linear(64, 1)
 
+        if self.env_name == "soft_reacher":
+            self.damping_network = torch.nn.Sequential(
+                torch.nn.Linear(input_size, 64),
+                torch.nn.Softplus(),
+                torch.nn.Linear(64, 64),
+                torch.nn.Softplus(),
+                torch.nn.Linear(64, out_L)
+            )
+
         self.a_zeros = a_zeros
 
     def trig_transform_q(self, q):
@@ -150,6 +159,9 @@ class lnn(torch.nn.Module):
             return torch.column_stack((torch.cos(q[:, 0]), torch.sin(q[:, 0]),
                                        torch.cos(q[:, 1]), torch.sin(q[:, 1])))
 
+        elif self.env_name == "soft_reacher":
+            return q
+
         else:
             raise NotImplementedError
 
@@ -176,6 +188,9 @@ class lnn(torch.nn.Module):
 
         elif self.env_name == "jax_pendulum":
             return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), x[:, 4:]), 1)
+
+        elif self.env_name == "soft_reacher":
+            return x
 
         else:
             raise NotImplementedError
@@ -250,6 +265,30 @@ class lnn(torch.nn.Module):
 
         return L
 
+    def compute_D(self, q):
+        y_D = self.damping_network(q)
+        device = y_D.device
+        D11 = y_D[:, 0].unsqueeze(1)
+        D1_zeros = torch.zeros(
+            D11.size(0), 2, dtype=torch.float64, device=device)
+
+        D21 = y_D[:, 1].unsqueeze(1)
+        D22 = y_D[:, 2].unsqueeze(1)
+        D2_zeros = torch.zeros(
+            D21.size(0), 1, dtype=torch.float64, device=device)
+
+        D31 = y_D[:, 3].unsqueeze(1)
+        D32 = y_D[:, 4].unsqueeze(1)
+        D33 = y_D[:, 5].unsqueeze(1)
+
+        D1 = torch.cat((D11, D1_zeros), 1)
+        D2 = torch.cat((D21, D22, D2_zeros), 1)
+        D3 = torch.cat((D31, D32, D33), 1)
+        D = torch.cat(
+            (D1.unsqueeze(1), D2.unsqueeze(1), D3.unsqueeze(1)), 1)
+
+        return D
+
     def get_A(self, a):
         if self.env_name == "pendulum" or self.env_name == "reacher":
             A = a
@@ -263,7 +302,7 @@ class lnn(torch.nn.Module):
         elif self.env_name == "cart3pole" or self.env_name == "acro3bot":
             A = torch.cat((a[:, :1], self.a_zeros, a[:, 1:]), 1)
 
-        elif self.env_name == "jax_pendulum":
+        elif self.env_name == "jax_pendulum" or self.env_name == "soft_reacher":
             A = torch.diag(a)
 
         else:
@@ -275,6 +314,11 @@ class lnn(torch.nn.Module):
         trig_q = self.trig_transform_q(q)
         L = self.compute_L(trig_q)
         return L.sum(0), L
+
+    def get_D(self, q):
+        trig_q = self.trig_transform_q(q)
+        D = self.compute_D(trig_q)
+        return D
 
     def get_V(self, q):
         trig_q = self.trig_transform_q(q)
@@ -291,8 +335,19 @@ class lnn(torch.nn.Module):
             0.5 * torch.einsum('bikj,bk,bj->bi', dM_dq, qdot, qdot)
         Minv = torch.cholesky_inverse(L)
         dV_dq = 0 if self.env_name == "reacher" else jacrev(self.get_V)(q)
-        qddot = torch.matmul(
-            Minv, (self.get_A(a)-c-dV_dq).unsqueeze(2)).squeeze(2)
+
+        if self.env_name == "soft_reacher":
+            LD = self.get_D(q)
+            damping_term = torch.einsum('bij, bji, bj->bi',
+                                        LD, LD, qdot)
+
+            qddot = torch.matmul(
+                Minv, (self.get_A(a) - c - dV_dq - damping_term).unsqueeze(2)).squeeze(2)
+
+        else:
+            qddot = torch.matmul(
+                Minv, (self.get_A(a)-c-dV_dq).unsqueeze(2)).squeeze(2)
+
         return qddot
 
     def derivs(self, s, a):
