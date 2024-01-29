@@ -82,8 +82,8 @@ class SoftReacher(BaseEnv):
 
     def _dsdt(self, t, s_all):
         s, a, w = self.get_components(s_all)
-        if np.abs(s[0]) < self.eps:
-            eps = self.eps*np.sign(s[0])
+        if np.abs(s[0]) < self._eps:
+            eps = self._eps * np.sign(s[0])
         else:
             eps = 0
         sdot = self.F(self.inertials + [eps] + s.tolist()+a.tolist()).flatten()
@@ -92,10 +92,7 @@ class SoftReacher(BaseEnv):
     def cartesian_from_obs(self):
         s_ps = np.linspace(0, self.l, 50)
         chi_ps = []
-        if np.abs(self.state[0]) < self.eps:
-            eps = self.eps*np.sign(self.state[0])
-        else:
-            eps = 0
+        eps = self.eps
         q = self.state[:self.n]
         for s_p in s_ps:
             chi_ps.append(self.chi([0, self.r, eps, *q], s_p))
