@@ -38,6 +38,11 @@ class SoftReacher(BaseEnv):
         self.a_scale = np.array([0.002,   0.05,    0.1])
         self._rk_method = "RK45"
 
+        del self.ang_vel_limit
+        self.qdot_limit = np.array([600, 40, 20])
+        assert self.qdot_limit.shape == (self.n,)
+
+
     def reset_state(self):
         initial_pos = np.random.uniform(low=-0.01, high=0.01, size=self.n)
         self.state = np.concatenate((initial_pos, np.zeros(self.n, )))
@@ -46,18 +51,18 @@ class SoftReacher(BaseEnv):
         return self.state
 
     def get_reward(self):
-        # upright = (np.array([np.cos(self.state[0])]) + 1) / 2
-        #
-        # qdot = self.state[self.n:]
-        # ang_vel = qdot
-        # small_velocity = rewards.tolerance(
-        #     ang_vel, margin=self.ang_vel_limit).min()
-        # small_velocity = (1 + small_velocity) / 2
-        #
-        # reward = upright.mean() * small_velocity
+        q, qdot = self.state[:self.n], self.state[self.n:]
+
+        pos_reward = rewards.tolerance(q, margin=self.l).min()
+        pos_reward = (1 + pos_reward) / 2
+
+        vel_reward = rewards.tolerance(qdot, margin=self.qdot_limit).min()
+        vel_reward = (1 + vel_reward) / 2
+
+        reward = pos_reward * vel_reward
         # self.reward_breakup.append([upright.mean(), small_velocity])
 
-        return -1
+        return reward
 
     def get_power(self, a, sdot):
         return np.array([a[0] * sdot[0]])
