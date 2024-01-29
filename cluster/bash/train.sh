@@ -9,7 +9,7 @@ fi
 
 # first argument must be among the following: acrobot, acro3bot, cartpole, cart2pole, cart3pole, pendulum, reacher
 case $1 in
-    "acrobot" | "acro3bot" | "cartpole"  | "cart2pole" | "cart3pole" | "pendulum" | "reacher")
+    "acrobot" | "acro3bot" | "cartpole"  | "cart2pole" | "cart3pole" | "pendulum" | "reacher" | "soft_reacher")
         environment=$1;;
     *)
         echo "Invalid environment"
