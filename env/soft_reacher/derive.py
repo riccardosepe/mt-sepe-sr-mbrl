@@ -34,7 +34,13 @@ def derive():
 
     q_orig = Matrix([q1, q2, q3])
     q = q_orig + q_offset
+
     qdot = Matrix([q1dot, q2dot, q3dot])
+
+    q_rest = Matrix([0., 0., 1.])  # rest strain
+
+    # map the configuration to the strains
+    q = q_rest + q
 
     # construct the symbolic matrices
     g = Matrix([0, gy])  # gravity vector
@@ -114,13 +120,6 @@ def derive():
     print(f"Computed G in {sec_to_min(time.time() - t)}")
     t = time.time()
 
-    # Use directly all three strains
-    # In this way, the strain basis is the Identity matrix
-    q_rest = Matrix([0., 0., 1.])  # rest strain
-
-    # map the configuration to the strains
-    q = q_rest + q
-
     # stiffness matrix of shape (3, 3)
     S = diag(*[I * E, (4 / 3) * A * mu, A * E])
 
@@ -143,10 +142,10 @@ def derive():
     det = simplify((B[0, 0] * a11) + (B[0, 1] * a12) + (B[0, 2] * a13))
 
     Minv = Matrix([[a11, a12, a13],
-                      [a12, a22, a23],
-                      [a13, a23, a33]]) / det
+                   [a12, a22, a23],
+                   [a13, a23, a33]]) / det
 
-    Minv = simplify(Minv)
+    # Minv = simplify(Minv)
 
     print(f"Inverted M in {sec_to_min(time.time() - t)}")
     t = time.time()
