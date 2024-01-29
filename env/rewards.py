@@ -120,13 +120,17 @@ def tolerance(x, bounds=(0.0, 0.0), margin=0.0, sigmoid='gaussian',
         ValueError: If `margin` is negative.
     """
     lower, upper = bounds
+    if type(margin) is float:
+        margin = np.array(margin)
     if lower > upper:
         raise ValueError('Lower bound must be <= upper bound.')
-    if margin < 0:
+    if (margin < 0).any():
         raise ValueError('`margin` must be non-negative.')
+    if (margin == 0).any() and not (margin == 0).all():
+        raise ValueError('When `margin` is an array, either every entry is zero or none.')
 
     in_bounds = np.logical_and(lower <= x, x <= upper)
-    if margin == 0:
+    if (margin == 0).all():
         value = np.where(in_bounds, 1.0, 0.0)
     else:
         d = np.where(x < lower, lower - x, x - upper) / margin
