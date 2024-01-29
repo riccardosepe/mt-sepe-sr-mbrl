@@ -45,6 +45,8 @@ class BaseEnv:
         self.x_limit = 2.0
         self.ang_vel_limit = 20.0
 
+        self._rk_method = 'DOP853'
+
     def wrap_state(self):
         pass
 
@@ -143,7 +145,7 @@ class BaseEnv:
                 self.phi[:, m] = post_process(self.phi[:, m], self.name)
         else:
             s_all = np.concatenate((s, a*self.a_scale, w))
-            ns = solve_ivp(self._dsdt, [0, self.dt], s_all, method='DOP853')
+            ns = solve_ivp(self._dsdt, [0, self.dt], s_all, method=self._rk_method)
             ns = ns.y[:, -1]  # only care about final timestep
             ns, nw = ns[:-(1+self.action_size)], ns[-1:]  # omit action
 
