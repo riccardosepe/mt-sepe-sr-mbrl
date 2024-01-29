@@ -98,6 +98,10 @@ class SoftReacher(BaseEnv):
             chi_ps.append(self.chi([0, self.r, eps, *q], s_p))
         return np.array(chi_ps).squeeze()
 
+    def _sample_goal(self):
+        # for the moment hardcoded
+        self._goal = np.array([self.l/2, self.l])
+
     def draw(self):
         # plotting in Pygame
         h, w = self.screen_height, self.screen_width  # img height and width
