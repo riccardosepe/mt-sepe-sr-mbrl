@@ -25,7 +25,7 @@ class SoftReacher(BaseEnv):
 
         super(SoftReacher, self).__init__(name="soft_reacher",
                                           n=3,
-                                          obs_size=3,
+                                          obs_size=6,
                                           action_size=3,
                                           inertials=[th0, rho, self.l, self.r, gy, E, mu, *d_diag],
                                           dt=0.02,
