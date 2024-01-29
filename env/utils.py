@@ -79,6 +79,9 @@ def make_env(name, mle=False):
     elif name == "jax_pendulum":
         from env.wrapped_envs import WrappedJaxPendulum as Env
 
+    elif name == "soft_reacher":
+        from env.soft_reacher.soft_reacher import SoftReacher as Env
+
     else:
         raise NotImplementedError
 
