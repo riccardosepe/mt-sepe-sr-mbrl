@@ -11,7 +11,11 @@ def main(args):
 
     # get project path
     # given path, it is the parent folder of the parent folder
-    project_path = os.path.dirname(os.path.dirname(path))
+    # while the current folder is not 'log'
+    while os.path.basename(path) != "log":
+        path = os.path.dirname(path)
+        if path == "/":
+            raise Exception("Could not find 'log' directory")
 
     # get all the seed folders
     seeds = os.listdir(path)
