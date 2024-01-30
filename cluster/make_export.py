@@ -3,6 +3,9 @@ import os
 
 
 def main(args):
+    if len(args) != 1:
+        print("Usage: python make_export.py <path>")
+        exit(-1)
     # first arg is a path
     path = args[0]
     # path has the following structure:
