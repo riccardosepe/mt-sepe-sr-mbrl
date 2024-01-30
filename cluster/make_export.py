@@ -12,9 +12,12 @@ def main(args):
     # get project path
     # given path, it is the parent folder of the parent folder
     # while the current folder is not 'log'
-    while os.path.basename(path) != "log":
-        path = os.path.dirname(path)
-        if path == "/":
+    project_path = path
+    env_name = os.path.basename(os.path.dirname(path))
+    print(f"Exporting {env_name}")
+    while os.path.basename(project_path) != "log":
+        project_path = os.path.dirname(project_path)
+        if project_path == "/":
             raise Exception("Could not find 'log' directory")
 
     # get all the seed folders
@@ -26,7 +29,7 @@ def main(args):
         # get the path to the model folder
         model_path = os.path.join(path, seed, "models")
         # get the path to the export folder
-        export_path = os.path.join(project_path, "export", seed)
+        export_path = os.path.join(project_path, "export", env_name, seed)
         # get the highest number of the .ckpt files
         # if model_path is empty, continue
         if len(os.listdir(model_path)) == 0:
