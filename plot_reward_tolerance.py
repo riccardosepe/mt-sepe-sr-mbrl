@@ -5,7 +5,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def main():
-    x = np.linspace(0, 1.5e-1, 100)
+    xmax = 1.5e-1
+    x = np.linspace(0, xmax, 100)
     y = np.linspace(0, 2e-1, 100)
 
     X, Y = np.meshgrid(x, y)
@@ -31,10 +32,10 @@ def main():
 
     fig2, ax2 = plt.subplots()
     # Add a line at y = 1e-2
-    y_line = 3.5e-2
-    x_line = np.linspace(0, 1.5e-1, 100)
+    y_line = 1e-1
+    x_line = np.linspace(0, xmax, 100)
     z_line = np.array([tolerance(xi, margin=y_line) for xi in x_line])
-    ax2.plot(x_line, z_line, color='k', linewidth=4)
+    ax2.plot(x_line, z_line)
 
     # ax2.set_xticks(np.linspace(0, 1.5e-1, 10))
     plt.show()
