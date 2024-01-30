@@ -8,7 +8,8 @@ def main(args):
         exit(-1)
     # first arg is a path
     path = args[0]
-
+    if path.endswith("/"):
+        path = path[:-1]
     # get project path
     # given path, it is the parent folder of the parent folder
     # while the current folder is not 'log'
