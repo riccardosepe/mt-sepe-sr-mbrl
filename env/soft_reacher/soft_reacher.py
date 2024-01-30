@@ -39,7 +39,7 @@ class SoftReacher(BaseEnv):
         self._rk_method = "RK45"
 
         del self.ang_vel_limit
-        self.qdot_limit = np.array([600, 40, 20])
+        self.qdot_limit = np.array([200, 5, 5])
         assert self.qdot_limit.shape == (self.n,)
 
         self._goal = None
