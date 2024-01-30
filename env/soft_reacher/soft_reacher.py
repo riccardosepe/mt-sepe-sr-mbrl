@@ -63,11 +63,11 @@ class SoftReacher(BaseEnv):
 
     def get_reward(self):
         q, qdot = self.state[:self.n], self.state[self.n:]
-        ee_pos = self.chi([0, self.r, self.eps, *q], self.l)[:2]
+        ee_pos = self.chi([0, self.r, self.eps, *q], self.l)[:2].T
         goal_dist = np.linalg.norm(ee_pos - self._goal)
 
-        pos_reward = rewards.tolerance(goal_dist, margin=self.l/10)
-        pos_reward = (1 + pos_reward) / 2
+        pos_reward = rewards.tolerance(goal_dist, margin=self.l)
+        # pos_reward_n = (1 + pos_reward) / 2
 
         vel_reward = rewards.tolerance(qdot, margin=self.qdot_limit).min()
         vel_reward = (1 + vel_reward) / 2
