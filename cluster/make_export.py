@@ -8,28 +8,10 @@ def main(args):
         exit(-1)
     # first arg is a path
     path = args[0]
-    # path has the following structure:
-    # path
-    #   - seed_x
-    #       - model
-    #           - n1.ckpt
-    #           - n2.ckpt
-    #           - ...
-    #       - tensorboard
-    #           - tensorboard outfile
 
-    # for each seed folder, get both the tensorboard folder and the .ckpt file with the highest number and put
-    # them in the same folder, for each seed, in a new folder called "export" with the following structure:
-    # export
-    #   - seed_x
-    #       - tensorboard
-    #           - tensorboard outfile
-    #       - nmax.ckpt
-    #   - seed_y
-    #       - tensorboard
-    #           - tensorboard outfile
-    #       - nmax.ckpt
-    #   - ...
+    # get project path
+    # given path, it is the parent folder of the parent folder
+    project_path = os.path.dirname(os.path.dirname(path))
 
     # get all the seed folders
     seeds = os.listdir(path)
@@ -38,19 +20,24 @@ def main(args):
         # get the path to the tensorboard folder
         tensorboard_path = os.path.join(path, seed, "tensorboard")
         # get the path to the model folder
-        model_path = os.path.join(path, seed, "model")
+        model_path = os.path.join(path, seed, "models")
         # get the path to the export folder
-        export_path = os.path.join(path, "export", seed)
+        export_path = os.path.join(project_path, "export", seed)
+        # get the highest number of the .ckpt files
+        # if model_path is empty, continue
+        if len(os.listdir(model_path)) == 0:
+            continue
         # create the export folder
         os.makedirs(export_path, exist_ok=True)
-        # get the highest number of the .ckpt files
-        max_ckpt = max([int(ckpt.split(".")[0]) for ckpt in os.listdir(model_path)])
+        max_ckpt = max([int(ckpt.split(".")[0]) for ckpt in os.listdir(model_path) if ckpt.split(".")[0] != 'emergency'])
         # get the path to the highest .ckpt file
         max_ckpt_path = os.path.join(model_path, f"{max_ckpt}.ckpt")
         # copy the tensorboard folder to the export folder
         os.system(f"cp -r {tensorboard_path} {export_path}")
         # copy the highest .ckpt file to the export folder
         os.system(f"cp {max_ckpt_path} {export_path}")
+
+    print("Done")
 
 
 if __name__ == '__main__':
