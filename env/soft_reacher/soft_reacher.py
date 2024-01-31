@@ -100,7 +100,7 @@ class SoftReacher(BaseEnv):
 
     def _sample_goal(self):
         # for the moment hardcoded
-        self._goal = np.array([self.l/2, self.l])
+        self._goal = np.array([self.l/2, self.l*0.8])
 
     def draw(self):
         # plotting in Pygame
