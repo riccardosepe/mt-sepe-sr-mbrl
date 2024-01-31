@@ -60,7 +60,7 @@ def pos_reward():
 
     distances = np.zeros((y_array.shape[0], x_array.shape[0]))
 
-    margin = 0.12
+    margin = 0.1 * 0.7
 
     for i, x in enumerate(x_array):
         for j, y in enumerate(y_array):
