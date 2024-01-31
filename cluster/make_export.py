@@ -43,7 +43,9 @@ def main(args):
         # copy the tensorboard folder to the export folder
         os.system(f"cp -r {tensorboard_path} {export_path}")
         # copy the highest .ckpt file to the export folder
-        os.system(f"cp {max_ckpt_path} {export_path}")
+        dst_path = os.path.join(export_path, "last.ckpt")
+        os.system(f"cp {max_ckpt_path} {dst_path}")
+        os.system(f"touch {os.path.join(export_path, str(max_ckpt))}")
 
     print("Done")
 
