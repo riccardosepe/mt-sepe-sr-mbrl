@@ -117,7 +117,7 @@ def pos_reward():
 
     ax.legend()
 
-    ax.set_title(f'Position reward with goal in {*goal,} and margin={margin}', pad=20)
+    ax.set_title(f'Position reward with goal in {*goal,} and margin={np.round(margin, decimals=3)}', pad=20)
 
     plt.show()
 
