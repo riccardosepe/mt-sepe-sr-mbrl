@@ -66,7 +66,7 @@ class SoftReacher(BaseEnv):
         ee_pos = self.chi([0, self.r, self.eps, *q], self.l)[:2].T
         goal_dist = np.linalg.norm(ee_pos - self._goal)
 
-        pos_reward = rewards.tolerance(goal_dist, margin=self.l)
+        pos_reward = rewards.tolerance(goal_dist, margin=self.l*0.7)
         # pos_reward_n = (1 + pos_reward) / 2
 
         vel_reward = rewards.tolerance(qdot, margin=self.qdot_limit).min()
