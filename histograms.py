@@ -1,11 +1,10 @@
 import numpy as np
-
+from matplotlib import pyplot as plt
 
 PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
 
 
 def states_histograms(buffer):
-    import matplotlib.pyplot as plt
     states = np.array([np.array(s[0]) for s in buffer.buffer])
     if states.shape[1] != 6:
         raise ValueError(f"States have shape {states.shape} instead of (N, 6)")
@@ -52,7 +51,6 @@ def joint_positions_velocities_histograms(buffer):
 
 
 def actions_histograms(buffer):
-    import matplotlib.pyplot as plt
     actions = np.array([np.array(sample[1]) for sample in buffer.buffer])
     # if actions.shape[1] != 3:
     #     raise ValueError(f"Actions have shape {actions.shape} instead of (N, 3)")
@@ -69,7 +67,6 @@ def actions_histograms(buffer):
 
 
 def rewards_histograms(buffer):
-    import matplotlib.pyplot as plt
     rewards = np.array([np.array(s[2]) for s in buffer.buffer])
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
     ax.hist(rewards, bins=10)
