@@ -27,9 +27,9 @@ To train MBRL LNN on Acrobot task, run,
 
 The data from this experiment will be stored in the folder "./log/acrobot/mbrl_lnn/seed_0". This folder will contain two sub folders, (i) models : here model checkpoints will be stored and (ii) tensorboard : here tensorboard plots will be stored.
 
-To evaluate MRBL LNN on Acrobot task, run,
+To evaluate MRBL LNN on Soft Reacher task, run,
 
-    python mbrl.py --env acrobot --mode eval --episodes 3 --seed 100 --checkpoint ./log/acrobot/mbrl_lnn/seed_0/models/499.ckpt --render
+    python mbrl.py --env soft_reacher --mode eval --episodes 3 --seed 100 --checkpoint ./export/soft_reacher/seed_0/last.ckpt --render
 
 ## Citation
 If you find this work helpful, please consider starring this repo and citing our paper using the following Bibtex.
