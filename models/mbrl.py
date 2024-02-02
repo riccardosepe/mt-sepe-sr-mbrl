@@ -128,6 +128,8 @@ class lnn(torch.nn.Module):
 
         self.a_zeros = a_zeros
 
+        self.dt0 = 1e-4
+
         # Solver
         term = to.ODETerm(self.derivs, with_args=True)
         # step_method = to.Heun(term=term)
@@ -380,7 +382,7 @@ class lnn(torch.nn.Module):
         s = self.inverse_trig_transform_model(o)
         t_start = torch.zeros((o.shape[0],))
         t_end = self.dt*torch.ones((o.shape[0],))
-        dt0 = 1e-4*torch.ones((o.shape[0],))
+        dt0 = self.dt0*torch.ones((o.shape[0],))
 
         sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
         s_1 = sol.ys[:, -1, :].squeeze(1)
