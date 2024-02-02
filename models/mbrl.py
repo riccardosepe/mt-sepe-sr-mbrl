@@ -5,6 +5,7 @@ from torch.distributions.normal import Normal
 import torch.nn.functional as F
 import numpy as np
 import torch
+import torchode as to
 torch.set_default_dtype(torch.float64)
 
 # Experience replay buffer
@@ -126,6 +127,16 @@ class lnn(torch.nn.Module):
             )
 
         self.a_zeros = a_zeros
+
+        # Solver
+        term = to.ODETerm(self.derivs, with_args=True)
+        # step_method = to.Heun(term=term)
+        step_method = to.Euler(term=term)
+        # step_method = to.Dopri5(term=term)
+        step_size_controller = to.FixedStepController()
+        # step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-4, dt_min=self.dt**2, term=term)
+        solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
+        self.solver = torch.compile(solver)
 
     def trig_transform_q(self, q):
         if self.env_name == "pendulum":
@@ -350,20 +361,30 @@ class lnn(torch.nn.Module):
 
         return qddot
 
-    def derivs(self, s, a):
+    def derivs(self, t, s, a):
         q, qdot = s[:, :self.n], s[:, self.n:]
         qddot = self.get_acc(q, qdot, a)
         return torch.cat((qdot, qddot), dim=1)
 
     def rk2(self, s, a):
         alpha = 2.0/3.0  # Ralston's method
-        k1 = self.derivs(s, a)
-        k2 = self.derivs(s + alpha * self.dt * k1, a)
+        k1 = self.derivs(0, s, a)
+        k2 = self.derivs(0, s + alpha * self.dt * k1, a)
         s_1 = s + self.dt * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
         return s_1
 
     def forward(self, o, a):
-        s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+        # replace this line with torchode integrator
+        # s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+
+        s = self.inverse_trig_transform_model(o)
+        t_start = torch.zeros((o.shape[0],))
+        t_end = self.dt*torch.ones((o.shape[0],))
+        dt0 = 1e-4*torch.ones((o.shape[0],))
+
+        sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
+        s_1 = sol.ys[:, -1, :].squeeze(1)
+
         o_1 = torch.cat((self.trig_transform_q(
             s_1[:, :self.n]), s_1[:, self.n:]), 1)
         return o_1
