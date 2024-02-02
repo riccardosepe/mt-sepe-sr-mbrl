@@ -128,7 +128,7 @@ class lnn(torch.nn.Module):
 
         self.a_zeros = a_zeros
 
-        self.dt0 = 1e-4
+        self.dt0 = 2e-4
 
         # Solver
         term = to.ODETerm(self.derivs, with_args=True)

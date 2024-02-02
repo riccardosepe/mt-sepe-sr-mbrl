@@ -22,7 +22,7 @@ class SoftReacher(BaseEnv):
         mu = 5e2
         d_diag = [1e-5, 1e-2, 1e-2]
         self._eps = 1e-2
-        dt = 2e-2
+        dt = 1e-2
 
         super(SoftReacher, self).__init__(name="soft_reacher",
                                           n=3,
