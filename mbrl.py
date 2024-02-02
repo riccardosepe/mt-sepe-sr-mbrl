@@ -295,7 +295,7 @@ class MBRL:
                         actor_grad_list.append(actor_grad.item())
                         critic_grad_list.append(critic_grad.item())
 
-                except:
+                except BaseException as e:
                     nan_count += 1
 
             if nan_count > 0:
