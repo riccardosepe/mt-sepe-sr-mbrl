@@ -24,7 +24,8 @@ class MBRL:
 
         self.env = make_env(self.arglist.env)
 
-        self.device = torch.device("cpu")
+        # self.device = torch.device("cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         path = "./log/"+self.env.name+"/mbrl_"+self.arglist.model
         self.exp_dir = os.path.join(path, "seed_"+str(self.arglist.seed))
