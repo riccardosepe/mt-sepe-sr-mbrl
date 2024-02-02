@@ -22,13 +22,14 @@ class SoftReacher(BaseEnv):
         mu = 5e2
         d_diag = [1e-5, 1e-2, 1e-2]
         self._eps = 1e-2
+        dt = 2e-2
 
         super(SoftReacher, self).__init__(name="soft_reacher",
                                           n=3,
                                           obs_size=6,
                                           action_size=3,
                                           inertials=[th0, rho, self.l, self.r, gy, E, mu, *d_diag],
-                                          dt=0.02,
+                                          dt=dt,
                                           a_scale=np.array([2.0]),
                                           mle=mle)
 
