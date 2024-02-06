@@ -1,3 +1,5 @@
+import sys
+
 from models.mbrl import ReplayBuffer, V_FC, Pi_FC, dnn, lnn, reward_model_FC
 from env.utils import make_env
 from torch.utils.tensorboard import SummaryWriter
@@ -188,6 +190,9 @@ class MBRL:
                 # Dynamics learning
                 O_1_pred = self.transition_model(O, A*self.a_scale)
                 transition_loss = self.transition_loss_fn(O_1_pred, O_1)
+                if torch.isnan(transition_loss).any().item():
+                    print("NAN LOSS", file=sys.stderr)
+                    exit(1)
                 self.transition_optimizer.zero_grad()
                 transition_loss.backward()
                 torch.nn.utils.clip_grad_norm_(
