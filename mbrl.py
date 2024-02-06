@@ -26,6 +26,7 @@ class MBRL:
 
         # self.device = torch.device("cpu")
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Using device", self.device)
 
         path = "./log/"+self.env.name+"/mbrl_"+self.arglist.model
         self.exp_dir = os.path.join(path, "seed_"+str(self.arglist.seed))
