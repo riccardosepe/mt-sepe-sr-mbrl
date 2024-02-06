@@ -40,6 +40,6 @@ else
     cluster="delftblue"
 fi
 
-source cluster/config/main.sh
+source cluster/config/main.sh "$environment"_"$seed"
 
 sbatch  cluster/sbatch/$cluster.sbatch mbrl.py --env "$environment" --mode train --episodes 500 --seed "$seed"
