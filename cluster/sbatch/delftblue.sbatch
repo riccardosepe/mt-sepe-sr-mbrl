@@ -8,7 +8,7 @@
 #SBATCH --mail-user=riccardo.sepe@studenti.polito.it
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=8G
-#SBATCH --gres=gpu:1,gpumem:16G
+#SBATCH --gres=gpu:1
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 
