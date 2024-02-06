@@ -1,7 +1,7 @@
 # This file holds all the environment variables for the cluster that constitute the job configuration.
 
 # if number of arguments is different from 2 including the script name, print error message and exit
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
     echo "Illegal number of parameters"
     echo "Usage: source cluster/config/main.sh <environment>_<seed>"
     exit 1
