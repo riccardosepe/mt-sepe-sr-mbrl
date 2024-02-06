@@ -213,14 +213,18 @@ class MBRL:
                 reward_grad_list.append(torch.norm(torch.cat(
                     [param.grad.flatten() for param in self.reward_model.parameters()])).item())
 
-            writer.add_scalar('transition_loss', np.mean(
-                transition_loss_list), episode)
-            writer.add_scalar('reward_loss', np.mean(
-                reward_loss_list), episode)
-            writer.add_scalar('transition_grad', np.mean(
-                transition_grad_list), episode)
-            writer.add_scalar('reward_grad', np.mean(
-                reward_grad_list), episode)
+            transition_loss_mean = np.mean(transition_loss_list)
+            reward_loss_mean = np.mean(reward_loss_list)
+            transition_grad_mean = np.mean(transition_grad_list)
+            reward_grad_mean = np.mean(reward_grad_list)
+
+            if np.isnan(transition_loss_mean) or np.isnan(reward_loss_mean) or np.isnan(transition_grad_mean) or np.isnan(reward_grad_mean):
+                breakpoint()
+
+            writer.add_scalar('transition_loss', transition_loss_mean, episode)
+            writer.add_scalar('reward_loss', reward_loss_mean, episode)
+            writer.add_scalar('transition_grad', transition_grad_mean, episode)
+            writer.add_scalar('reward_grad', reward_grad_mean, episode)
 
             # Behaviour learning
             actor_loss_list, critic_loss_list = [], []
