@@ -26,6 +26,5 @@ def main():
         print("Std abs velocity: ", np.std(velocities, axis=0))
 
 
-
 if __name__ == '__main__':
     main()
