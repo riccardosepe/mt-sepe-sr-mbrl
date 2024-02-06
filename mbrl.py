@@ -218,9 +218,6 @@ class MBRL:
             transition_grad_mean = np.mean(transition_grad_list)
             reward_grad_mean = np.mean(reward_grad_list)
 
-            if np.isnan(transition_loss_mean) or np.isnan(reward_loss_mean) or np.isnan(transition_grad_mean) or np.isnan(reward_grad_mean):
-                breakpoint()
-
             writer.add_scalar('transition_loss', transition_loss_mean, episode)
             writer.add_scalar('reward_loss', reward_loss_mean, episode)
             writer.add_scalar('transition_grad', transition_grad_mean, episode)
