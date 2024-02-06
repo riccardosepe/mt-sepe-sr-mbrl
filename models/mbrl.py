@@ -128,7 +128,7 @@ class lnn(torch.nn.Module):
 
         self.a_zeros = a_zeros
 
-        self.dt0 = 2e-4
+        self.dt0 = 1e-3
 
         # Solver
         term = to.ODETerm(self.derivs, with_args=True)
@@ -378,6 +378,7 @@ class lnn(torch.nn.Module):
     def forward(self, o, a):
         # replace this line with torchode integrator
         # s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+
         device = o.device
         s = self.inverse_trig_transform_model(o)
         t_start = torch.zeros((o.shape[0],)).to(device)
