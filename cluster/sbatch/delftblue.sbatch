@@ -7,8 +7,10 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=riccardo.sepe@studenti.polito.it
 #SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=16G
-
+#SBATCH --mem-per-cpu=8G
+#SBATCH --gres=gpu:1,gpumem:16G
+#SBATCH --output=%x-%j.out
+#SBATCH --error=%x-%j.err
 
 # Load python
 module load 2022r2
