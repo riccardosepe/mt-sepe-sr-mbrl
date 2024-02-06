@@ -11,13 +11,24 @@ def main():
     env.render()
 
     while True:
+        states = []
         velocities = []
         v = float(input("Enter action: "))
         a = v * np.ones(env.action_size)
+        a[-1] = np.abs(a[-1])
         for _ in range(100):
             env.step(a)
             env.render()
-            velocities.append(env.state[-env.n:])
+            states.append(env.get_obs()[:env.n])
+            velocities.append(env.get_obs()[-env.n:])
+
+        states = np.array(states)
+        states = np.abs(states)
+        print("Max state: ", np.max(states, axis=0))
+        print("Min state: ", np.min(states, axis=0))
+        print("Mean state: ", np.mean(states, axis=0))
+        print("Std state: ", np.std(states, axis=0))
+
         velocities = np.array(velocities)
         velocities = np.abs(velocities)
         print("Max abs velocity: ", np.max(velocities, axis=0))
