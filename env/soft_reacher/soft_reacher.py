@@ -43,6 +43,8 @@ class SoftReacher(BaseEnv):
         self.qdot_limit = np.array([200, 5, 5])
         assert self.qdot_limit.shape == (self.n,)
 
+        self.mask = np.tile([self.l, 1, 1], 2)
+
         self._goal = None
         self._sample_goal()
 
@@ -60,7 +62,7 @@ class SoftReacher(BaseEnv):
         self.state = np.concatenate((initial_pos, np.zeros(self.n, )))
 
     def get_obs(self):
-        return self.state
+        return self.state * self.mask
 
     def get_reward(self):
         q, qdot = self.state[:self.n], self.state[self.n:]
