@@ -128,18 +128,6 @@ class lnn(torch.nn.Module):
 
         self.a_zeros = a_zeros
 
-        self.dt0 = 1e-3
-
-        # Solver
-        term = to.ODETerm(self.derivs, with_args=True)
-        # step_method = to.Heun(term=term)
-        step_method = to.Euler(term=term)
-        # step_method = to.Dopri5(term=term)
-        step_size_controller = to.FixedStepController()
-        #step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt0, term=term)
-        solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
-        self.solver = torch.compile(solver)
-
     def trig_transform_q(self, q):
         if self.env_name == "pendulum":
             return torch.column_stack((torch.cos(q[:, 0]), torch.sin(q[:, 0])))
@@ -377,16 +365,7 @@ class lnn(torch.nn.Module):
 
     def forward(self, o, a):
         # replace this line with torchode integrator
-        # s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
-
-        device = o.device
-        s = self.inverse_trig_transform_model(o)
-        t_start = torch.zeros((o.shape[0],)).to(device)
-        t_end = self.dt*torch.ones((o.shape[0],)).to(device)
-        dt0 = self.dt0*torch.ones((o.shape[0],)).to(device)
-
-        sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
-        s_1 = sol.ys[:, -1, :].squeeze(1)
+        s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
 
         o_1 = torch.cat((self.trig_transform_q(
             s_1[:, :self.n]), s_1[:, self.n:]), 1)
