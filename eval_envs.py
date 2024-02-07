@@ -16,9 +16,10 @@ def main():
         v = float(input("Enter action: "))
         a = v * np.ones(env.action_size)
         a[-1] = np.abs(a[-1])
-        for _ in range(100):
+        for i in range(5000):
             env.step(a)
-            env.render()
+            if i % 100 == 0:
+                env.render()
             states.append(env.get_obs()[:env.n])
             velocities.append(env.get_obs()[-env.n:])
 
