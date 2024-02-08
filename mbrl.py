@@ -209,7 +209,7 @@ class MBRL:
                     self.arglist.batch_size)
 
                 # Dynamics learning
-                O_1_pred = self.transition_model(O, A*self.a_scale)
+                O_1_pred = self.transition_model(O, A*self.a_scale, train=True)
                 transition_loss = self.transition_loss_fn(O_1_pred, O_1)
                 if torch.isnan(transition_loss).any().item():
                     print("NAN LOSS", file=sys.stderr)
@@ -263,7 +263,7 @@ class MBRL:
                     while True:
                         A, log_prob = self.actor(O, False, True)
                         log_probs.append(log_prob)
-                        O_1 = self.transition_model(O, A*self.a_scale)
+                        O_1 = self.transition_model(O, A*self.a_scale, train=False)
                         R.append(self.reward_model(O_1))
                         values.append(self.critic(O))
                         values_target.append(self.critic_target(O))
