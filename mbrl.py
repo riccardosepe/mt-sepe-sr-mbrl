@@ -398,8 +398,8 @@ class MBRL:
                 o_1, r, done = self.env.step(a)
                 if render:
                     self.env.render()
-                ep_r += r
-                o = o_1
+                ep_r += r[-1]
+                o = o_1[-1, :]
                 if done:
                     ep_r_list.append(ep_r)
                     if render:
