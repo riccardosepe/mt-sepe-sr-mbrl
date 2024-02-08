@@ -367,11 +367,11 @@ class lnn(torch.nn.Module):
         qddot = self.get_acc(q, qdot, a)
         return torch.cat((qdot, qddot), dim=1)
 
-    def rk2(self, s, a):
+    def rk2(self, s, a, dt):
         alpha = 2.0/3.0  # Ralston's method
         k1 = self.derivs(0, s, a)
-        k2 = self.derivs(0, s + alpha * self.dt_small * k1, a)
-        s_1 = s + self.dt_small * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
+        k2 = self.derivs(0, s + alpha * dt * k1, a)
+        s_1 = s + dt * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
         return s_1
 
     def forward(self, o, a, train):
