@@ -341,25 +341,33 @@ class MBRL:
             print("Starting Environment Interaction")
             o, _, _ = self.env.reset()
             o_tensor = torch.tensor(
-                o, dtype=torch.float64, device=self.device).unsqueeze(0)
+                o, dtype=torch.float64, device=self.device)
             ep_r = 0
             while True:
                 with torch.no_grad():
                     try:
-                        a_tensor, _ = self.actor(o_tensor)
+                        a_tensor, _ = self.actor(o_tensor[None])
                     except:
                         print("episode", episode,
                               "got nan during environment interaction")
                         break
                 o_1, r, done = self.env.step(a_tensor.cpu().numpy()[0])
                 o_1_tensor = torch.tensor(
-                    o_1, dtype=torch.float64, device=self.device).unsqueeze(0)
+                    o_1, dtype=torch.float64, device=self.device)
                 r_tensor = torch.tensor(
                     r, dtype=torch.float64, device=self.device)
-                self.replay_buffer.push(
-                    o_tensor[0], a_tensor[0], r_tensor, o_1_tensor[0])
-                ep_r += r
-                o_tensor = o_1_tensor
+                a_tensor = a_tensor.squeeze()
+
+                n = int(self.env.dt / self.env.dt_small)
+                assert n > 0
+                for i in range(n):
+                    o_1_small = o_1_tensor[i, :].squeeze()
+                    r_small = r_tensor[i].squeeze()
+                    self.replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
+
+                    o_tensor = o_1_small
+
+                ep_r += r_small.cpu().item()
                 if done:
                     writer.add_scalar('ep_r', ep_r, episode)
                     if episode % self.arglist.eval_every == 0 or episode == self.arglist.episodes-1:
