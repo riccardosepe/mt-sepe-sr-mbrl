@@ -167,7 +167,6 @@ class MBRL:
                 o, _, _ = self.env.reset()
                 o_tensor = torch.tensor(
                     o, dtype=torch.float64, device=self.device)
-                ep_r = 0
                 while True:
                     a = np.random.uniform(-1.0, 1.0, size=self.env.action_size)
                     o_1, r, done = self.env.step(a)
@@ -177,10 +176,24 @@ class MBRL:
                         o_1, dtype=torch.float64, device=self.device)
                     r_tensor = torch.tensor(
                         r, dtype=torch.float64, device=self.device)
-                    self.replay_buffer.push(
-                        o_tensor, a_tensor, r_tensor, o_1_tensor)
-                    ep_r += r
-                    o_tensor = o_1_tensor
+                    # Here there is the first big change:
+                    #  - o_tensor is a tensor of shape (D,)
+                    #  - a_tensor is a tensor of shape (A,)
+                    #  - r_tensor is a tensor of shape (N, 1)
+                    #  - o_1 is a tensor of shape (N, D), where:
+                    #  - B is batch size, for example 64
+                    #  - D is the observation size, in this case 6
+                    #  - A is the action size, in this case 3
+                    # - N is the number of intermediate observations returned by the environment, i.e. dt_large/dt_small
+                    # NB: N is most likely between 50 and 100
+                    n = int(self.env.dt / self.env.dt_small)
+                    for i in range(n):
+                        o_1_small = o_1_tensor[i, :].squeeze()
+                        r_small = r_tensor[i].squeeze()
+                        self.replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
+
+                        o_tensor = o_1_small
+
                     if done:
                         break
 
