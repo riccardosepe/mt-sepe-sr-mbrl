@@ -1,3 +1,5 @@
+from scipy.integrate import solve_ivp
+
 from env.base import BaseEnv
 from env.utils import rect_points, wrap, basic_check
 from env import rewards
@@ -22,7 +24,8 @@ class SoftReacher(BaseEnv):
         mu = 5e2
         d_diag = [1e-5, 1e-2, 1e-2]
         self._eps = 1e-2
-        dt = 2e-4
+        dt = 1e-2
+        self.dt_small = 2e-4
 
         super(SoftReacher, self).__init__(name="soft_reacher",
                                           n=3,
@@ -61,7 +64,9 @@ class SoftReacher(BaseEnv):
         initial_pos = np.random.uniform(low=-0.01, high=0.01, size=self.n)
         self.state = np.concatenate((initial_pos, np.zeros(self.n, )))
 
-    def get_obs(self):
+    def get_obs(self, bunch_of_states=None):
+        if bunch_of_states is not None:
+            return bunch_of_states * self.mask[:, None]
         return self.state * self.mask
 
     def get_reward(self):
@@ -91,6 +96,29 @@ class SoftReacher(BaseEnv):
             eps = 0
         sdot = self.F(self.inertials + [eps] + s.tolist()+a.tolist()).flatten()
         return np.concatenate((sdot, self.a_zeros, self.get_power(a, sdot)))
+
+    def step(self, a, da_ds=None):
+        s = self.state
+        a = np.clip(a, -1.0, 1.0)
+        w = self.w
+
+        t_eval = np.arange(0+self.dt_small, self.dt+self.dt_small, step=self.dt_small)
+
+        s_all = np.concatenate((s, a*self.a_scale, w))
+        y1 = solve_ivp(self._dsdt, [0, self.dt], s_all, t_eval=t_eval, method=self._rk_method)
+        ns = y1.y[:, -1]  # only care about final timestep
+        ns, nw = ns[:-(1+self.action_size)], ns[-1:]  # omit action
+
+        self.w = nw
+        self.state = ns
+        self.t += 1
+
+        if self.t >= self.t_max:  # infinite horizon formulation, no terminal state, similar to dm_control
+            done = True
+        else:
+            done = False
+
+        return self.get_obs(y1.y[:-(1+self.action_size), :]), self.get_reward(), done
 
     def cartesian_from_obs(self):
         s_ps = np.linspace(0, self.l, 50)
