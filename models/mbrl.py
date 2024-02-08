@@ -376,16 +376,17 @@ class lnn(torch.nn.Module):
 
     def forward(self, o, a, train):
         if train:
-            s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+            s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_small)
         else:
-            device = o.device
-            s = self.inverse_trig_transform_model(o)
-            t_start = torch.zeros((o.shape[0],)).to(device)
-            t_end = self.dt_large*torch.ones((o.shape[0],)).to(device)
-            dt0 = self.dt_small*torch.ones((o.shape[0],)).to(device)
-
-            sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
-            s_1 = sol.ys[:, -1, :].squeeze(1)
+            s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_large)
+            # device = o.device
+            # s = self.inverse_trig_transform_model(o)
+            # t_start = torch.zeros((o.shape[0],)).to(device)
+            # t_end = self.dt_large*torch.ones((o.shape[0],)).to(device)
+            # dt0 = self.dt_small*torch.ones((o.shape[0],)).to(device)
+            #
+            # sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
+            # s_1 = sol.ys[:, -1, :].squeeze(1)
 
         o_1 = torch.cat((self.trig_transform_q(
             s_1[:, :self.n]), s_1[:, self.n:]), 1)
