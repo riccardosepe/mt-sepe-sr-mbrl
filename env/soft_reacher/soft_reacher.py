@@ -66,15 +66,16 @@ class SoftReacher(BaseEnv):
 
     def get_obs(self, bunch_of_states=None):
         if bunch_of_states is not None:
-            return bunch_of_states * self.mask[:, None]
-        return self.state * self.mask
+            return bunch_of_states * self.mask
+        else:
+            return self.state * self.mask
 
-    def get_reward(self):
-        q, qdot = self.state[:self.n], self.state[self.n:]
+    def _reward_function(self, state):
+        q, qdot = state[:self.n], state[self.n:]
         ee_pos = self.chi([0, self.r, self.eps, *q], self.l)[:2].T
         goal_dist = np.linalg.norm(ee_pos - self._goal)
 
-        pos_reward = rewards.tolerance(goal_dist, margin=self.l*0.7)
+        pos_reward = rewards.tolerance(goal_dist, margin=self.l * 0.7)
         # pos_reward_n = (1 + pos_reward) / 2
 
         vel_reward = rewards.tolerance(qdot, margin=self.qdot_limit).min()
@@ -84,6 +85,12 @@ class SoftReacher(BaseEnv):
         self.reward_breakup.append([pos_reward, vel_reward])
 
         return reward
+
+    def get_reward(self, bunch_of_states=None):
+        if bunch_of_states is not None:
+            return np.array([self._reward_function(bunch_of_states[i, :]) for i in range(bunch_of_states.shape[0])])
+        else:
+            return self._reward_function(self.state)
 
     def get_power(self, a, sdot):
         return np.array([a[0] * sdot[0]])
@@ -118,7 +125,9 @@ class SoftReacher(BaseEnv):
         else:
             done = False
 
-        return self.get_obs(y1.y[:-(1+self.action_size), :]), self.get_reward(), done
+        states = y1.y[:-(1+self.action_size), :].T
+
+        return self.get_obs(states), self.get_reward(states), done
 
     def cartesian_from_obs(self):
         s_ps = np.linspace(0, self.l, 50)
