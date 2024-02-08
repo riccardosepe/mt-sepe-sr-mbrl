@@ -101,10 +101,11 @@ class dnn(torch.nn.Module):
 
 
 class lnn(torch.nn.Module):
-    def __init__(self, env_name, n, obs_size, action_size, dt, a_zeros):
+    def __init__(self, env_name, n, obs_size, action_size, dt, dt_small, a_zeros):
         super(lnn, self).__init__()
         self.env_name = env_name
-        self.dt = dt
+        self.dt_large = dt
+        self.dt_small = dt_small
         self.n = n
 
         input_size = obs_size - self.n
@@ -127,6 +128,16 @@ class lnn(torch.nn.Module):
             )
 
         self.a_zeros = a_zeros
+
+        # Solver
+        term = to.ODETerm(self.derivs, with_args=True)
+        # step_method = to.Heun(term=term)
+        step_method = to.Euler(term=term)
+        # step_method = to.Dopri5(term=term)
+        step_size_controller = to.FixedStepController()
+        #step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt0, term=term)
+        solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
+        self.solver = torch.compile(solver)
 
     def trig_transform_q(self, q):
         if self.env_name == "pendulum":
@@ -359,13 +370,22 @@ class lnn(torch.nn.Module):
     def rk2(self, s, a):
         alpha = 2.0/3.0  # Ralston's method
         k1 = self.derivs(0, s, a)
-        k2 = self.derivs(0, s + alpha * self.dt * k1, a)
-        s_1 = s + self.dt * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
+        k2 = self.derivs(0, s + alpha * self.dt_small * k1, a)
+        s_1 = s + self.dt_small * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
         return s_1
 
-    def forward(self, o, a):
-        # replace this line with torchode integrator
-        s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+    def forward(self, o, a, train):
+        if train:
+            s_1 = self.rk2(self.inverse_trig_transform_model(o), a)
+        else:
+            device = o.device
+            s = self.inverse_trig_transform_model(o)
+            t_start = torch.zeros((o.shape[0],)).to(device)
+            t_end = self.dt_large*torch.ones((o.shape[0],)).to(device)
+            dt0 = self.dt_small*torch.ones((o.shape[0],)).to(device)
+
+            sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
+            s_1 = sol.ys[:, -1, :].squeeze(1)
 
         o_1 = torch.cat((self.trig_transform_q(
             s_1[:, :self.n]), s_1[:, self.n:]), 1)
