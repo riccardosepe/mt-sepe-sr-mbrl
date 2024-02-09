@@ -158,6 +158,7 @@ class MBRL:
 
     def train(self):
         critic_target_updates = 0
+        first_update = False
 
         writer = SummaryWriter(log_dir=self.tensorboard_dir)
 
@@ -316,7 +317,8 @@ class MBRL:
                         self.actor_optimizer.step()
 
                         critic_target_updates = (critic_target_updates+1) % 100
-                        if critic_target_updates == 0:
+                        if critic_target_updates == 0 or not first_update:
+                            first_update = True
                             self.hard_update(self.critic_target, self.critic)
 
                         actor_loss_list.append(actor_loss.item())
@@ -460,3 +462,39 @@ def parse_args():
 if __name__ == '__main__':
     arglist = parse_args()
     mbrl = MBRL(arglist)
+
+
+# import torch
+# import torch.nn as nn
+#
+# class CustomLoss(nn.Module):
+#     def __init__(self):
+#         super(CustomLoss, self).__init__()
+#
+#     def forward(self, pred, target):
+#         mse_loss = nn.MSELoss()(pred, target)
+#         penalty = torch.where(pred > 5, (pred - 5)**2, torch.zeros_like(pred))
+#         return mse_loss + penalty.mean()
+
+# import torch
+# import torch.nn as nn
+#
+# # Suppose 'output' is your model's output and 'target' is the ground truth
+# output = ...
+# target = ...
+#
+# # Create a mask where True indicates that an entry contains no NaN values
+# mask = ~torch.any(torch.isnan(output), dim=1)
+#
+# # Count the number of entries that will be ignored (i.e., the sum of the inverted mask)
+# ignored_count = (~mask).sum().item()
+#
+# # Use the mask to select entries with no NaN values
+# output = output[mask]
+# target = target[mask]
+#
+# # Compute the loss on selected entries
+# criterion = nn.MSELoss()  # or any other loss function you are using
+# loss = criterion(output, target)
+#
+# print(f"Ignored {ignored_count} entries containing NaN values in this iteration")
