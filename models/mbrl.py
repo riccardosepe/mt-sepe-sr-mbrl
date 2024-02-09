@@ -374,11 +374,19 @@ class lnn(torch.nn.Module):
         s_1 = s + dt * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
         return s_1
 
+    def rk4(self, s, a, dt):
+        k1 = self.derivs(0, s, a)
+        k2 = self.derivs(0, s + 0.5 * dt * k1, a)
+        k3 = self.derivs(0, s + 0.5 * dt * k2, a)
+        k4 = self.derivs(0, s + dt * k3, a)
+        s_1 = s + dt * (1.0 / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        return s_1
+
     def forward(self, o, a, train):
         if train:
             s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_small)
         else:
-            s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_large)
+            s_1 = self.rk4(self.inverse_trig_transform_model(o), a, self.dt_large)
             # device = o.device
             # s = self.inverse_trig_transform_model(o)
             # t_start = torch.zeros((o.shape[0],)).to(device)
