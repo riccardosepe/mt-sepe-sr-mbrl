@@ -8,18 +8,20 @@ PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
 
 
 @torch.no_grad()
-def rollout_plots(env, model):
+def rollout_plots(env, model, render=False):
     """
     Rollout the model in the environment and return the trajectories.
     :param env: The environment (GT)
     :param model: The model (PRED)
+    :param render: whether to render or not
     """
     dt = env.dt
     max_time = 5  # seconds
     max_steps = int(max_time / dt)
     act_size = env.action_size
+    steps_per_second = int(1 / dt)
 
-    a_bounds = 0.5 * env.a_scale
+    a_bounds = 1. * env.a_scale
 
     o_t, _, _ = env.reset()
 
@@ -28,18 +30,23 @@ def rollout_plots(env, model):
     actions = []
 
     o_t = torch.tensor(o_t).unsqueeze(0)
+    pbar = tqdm(range(max_steps))
 
-    for _ in tqdm(range(max_steps)):
-        indices = np.random.choice([-1, 0, 1], size=act_size)
-        act = indices * a_bounds
-        actions.append(act)
-        o_t_1_gt, _, _ = env.step(act)
-        o_t_1_pred = model(o_t, torch.tensor(act).unsqueeze(0))
+    for _ in range(max_time):
+        act_ones = np.random.choice([-1, 0, 1], size=act_size)
+        act = torch.tensor(act_ones * a_bounds).unsqueeze(0)
+        for _ in range(steps_per_second):
+            actions.append(act_ones)
+            o_t_1_gt, _, _ = env.step(act_ones)
+            o_t_1_pred = model(o_t, act, train=False)
 
-        observations_gt.append(o_t_1_gt)
-        observations_pred.append(o_t_1_pred.numpy().squeeze())
+            observations_gt.append(o_t_1_gt[-1, :])
+            observations_pred.append(o_t_1_pred.numpy().squeeze())
 
-        o_t = o_t_1_pred
+            o_t = o_t_1_pred
+            pbar.update(1)
+            if render:
+                env.render()
 
     # Convert to numpy arrays
     observations_gt = np.array(observations_gt)
@@ -50,14 +57,16 @@ def rollout_plots(env, model):
     fig, axs = plt.subplots(3, 2, figsize=(15, 10))
 
     for i in range(3):
-        axs[i % 3, 0].plot(observations_gt[:, i], label=f"GT_{PLT_LABELS[i]}")
-        axs[i % 3, 0].plot(observations_pred[:, i], label=f"PRED_{PLT_LABELS[i]}")
+        axs[i % 3, 0].plot(observations_gt[:, i], label=f"Ground truth")
+        axs[i % 3, 0].plot(observations_pred[:, i], label=f"Prediction")
+        axs[i % 3, 0].plot(actions[:, i], label="Actuation")
         axs[i % 3, 0].set_title(PLT_LABELS[i])
+        axs[i % 3, 0].legend()
 
-        axs[i % 3, 1].plot(observations_gt[:, i+3], label=f"GT_{PLT_LABELS[i+3]}")
-        axs[i % 3, 1].plot(observations_pred[:, i+3], label=f"PRED_{PLT_LABELS[i+3]}")
+        axs[i % 3, 1].plot(observations_gt[:, i+3], label=f"Ground truth")
+        axs[i % 3, 1].plot(observations_pred[:, i+3], label=f"Prediction")
         axs[i % 3, 1].set_title(PLT_LABELS[i+3])
+        axs[i % 3, 1].legend()
 
     plt.tight_layout()
-    plt.legend()
     plt.show()
