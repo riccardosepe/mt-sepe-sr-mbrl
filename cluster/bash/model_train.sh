@@ -40,6 +40,11 @@ else
     cluster="delftblue"
 fi
 
-source cluster/config/main.sh "model_train_$seed"
+# The following variables are used by the sbatch scripts
+# The name of the job
+export SBATCH_JOB_NAME=model_train_"$seed"
+
+# The maximum time the job can run for
+export SBATCH_TIMELIMIT="60:00:00"
 
 sbatch  cluster/sbatch/$cluster.sbatch train_model.py --seed "$seed"

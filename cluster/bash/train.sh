@@ -40,6 +40,12 @@ else
     cluster="delftblue"
 fi
 
-source cluster/config/main.sh "$environment"_"$seed"
+# The following variables are used by the sbatch scripts
+# The name of the job
+export SBATCH_JOB_NAME="$environment"_"$seed"
+
+# The maximum time the job can run for
+export SBATCH_TIMELIMIT="100:00:00"
+
 
 sbatch  cluster/sbatch/$cluster.sbatch mbrl.py --env "$environment" --mode train --episodes 500 --seed "$seed"
