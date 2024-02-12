@@ -135,7 +135,7 @@ class lnn(torch.nn.Module):
         step_method = to.Euler(term=term)
         # step_method = to.Dopri5(term=term)
         step_size_controller = to.FixedStepController()
-        #step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt0, term=term)
+        # step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt0, term=term)
         solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
         self.solver = torch.compile(solver)
 
@@ -384,7 +384,7 @@ class lnn(torch.nn.Module):
 
     def forward(self, o, a, train):
         if train:
-            s_1 = self.rk4(self.inverse_trig_transform_model(o), a, self.dt_small)
+            s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_small)
         else:
             s_1 = self.rk4(self.inverse_trig_transform_model(o), a, self.dt_large)
             # device = o.device
