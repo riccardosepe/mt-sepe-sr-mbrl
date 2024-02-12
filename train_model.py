@@ -1,5 +1,6 @@
+import argparse
 import os
-import sys
+import random
 
 import numpy as np
 import torch
@@ -8,18 +9,27 @@ from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
 from models.mbrl import ReplayBuffer, lnn, reward_model_FC
-from rollout_plots import rollout_plots
 
 
-def train_model(resume=False, seed=0):
+def seed_all(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
 
-    if os.path.isdir(f"log/model/seed_{seed}") and not resume:
-        raise FileExistsError(f"Folder 'log/model/seed_{seed}' already exists.")
+
+def train_model(resume=False, seed=None):
+    base_dir = f"log/model/seed_{seed}"
+    if os.path.isdir(base_dir) and not resume:
+        raise FileExistsError(f"Folder {base_dir} already exists.")
+
+    # Set the seed
+    seed_all(seed)
 
     # Initialize the environment
     env = SoftReacher(mle=False)
 
-    tensorboard_dir = f"log/model/seed_{seed}/tensorboard"
+    tensorboard_dir = os.path.join(base_dir, "tensorboard")
     K = 10
     lr = 3e-4
 
@@ -110,7 +120,6 @@ def train_model(resume=False, seed=0):
         print("Loaded checkpoint")
 
     num_epochs = 500
-    rollout_plots(env, transition_model, True)
 
     for epoch in range(epoch0, num_epochs):
         # Model learning
@@ -166,8 +175,12 @@ def train_model(resume=False, seed=0):
                           'reward_optimizer': reward_optimizer.state_dict(),
                           'replay_buffer': replay_buffer
                           }
-            torch.save(checkpoint, os.path.join(f"log/model/seed_{seed}", "emergency.ckpt"))
+            torch.save(checkpoint, os.path.join(base_dir, "emergency.ckpt"))
 
 
 if __name__ == "__main__":
-    train_model(seed=1)
+    parser = argparse.ArgumentParser("Train the model")
+    parser.add_argument("--resume", action="store_true", default=False, help="Resume training")
+    parser.add_argument("--seed", type=int, default=None, help="seed")
+    args = parser.parse_args()
+    train_model(seed=args.seed, resume=args.resume)
