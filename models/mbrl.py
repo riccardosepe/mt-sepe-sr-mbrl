@@ -315,7 +315,7 @@ class lnn(torch.nn.Module):
             A = torch.cat((a[:, :1], self.a_zeros, a[:, 1:]), 1)
 
         elif self.env_name == "jax_pendulum" or self.env_name == "soft_reacher":
-            A = torch.diag(a)
+            A = a
 
         else:
             raise NotImplementedError
