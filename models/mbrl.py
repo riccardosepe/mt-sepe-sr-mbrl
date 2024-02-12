@@ -384,7 +384,7 @@ class lnn(torch.nn.Module):
 
     def forward(self, o, a, train):
         if train:
-            s_1 = self.rk2(self.inverse_trig_transform_model(o), a, self.dt_small)
+            s_1 = self.rk4(self.inverse_trig_transform_model(o), a, self.dt_small)
         else:
             s_1 = self.rk4(self.inverse_trig_transform_model(o), a, self.dt_large)
             # device = o.device
