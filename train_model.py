@@ -95,6 +95,7 @@ def train_model(resume=False, seed=None):
                 for i in range(n):
                     o_1_small = o_1_tensor[i, :].squeeze()
                     r_small = r_tensor[i].squeeze()
+                    replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
                     # remove small values for bending
                     # if not (-1. < o_tensor[0] < 1.) and not (-1. < o_1_small[0] < 1.):
                     #     replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
