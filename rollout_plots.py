@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
@@ -8,7 +10,7 @@ PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
 
 
 @torch.no_grad()
-def rollout_plots(env, model, render=False, save=False, save_path=None):
+def rollout_plots(env, model, epoch, render=False, save=False, save_path=None):
     """
     Rollout the model in the environment and return the trajectories.
     :param env: The environment (GT)
@@ -16,6 +18,7 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     :param render: whether to render or not
     :param save: whether to save the plots or not to a file
     :param save_path: the path to save the plots
+    :param epoch: the epoch of the training. Must be non-None if save is True
     """
 
     dt = env.dt
@@ -59,7 +62,8 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     actions = np.array(actions)
 
     # observations have shape (n_steps, 6)
-    fig, axs = plt.subplots(3, 2, figsize=(15, 10))
+    fig_r, axs_r = plt.subplots(3, 2, figsize=(15, 10))
+    fig_e, axs_e = plt.subplots(3, 2, figsize=(15, 10))
 
     # Currently the xticks are given by the index of the observations
     # We should change this to the time in seconds
@@ -67,24 +71,38 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     xticks = np.arange(0, max_time + dt)
 
     for i in range(3):
-        axs[i % 3, 0].plot(observations_gt[:, i], label=f"Ground truth")
-        axs[i % 3, 0].plot(observations_pred[:, i], label=f"Prediction")
-        axs[i % 3, 0].plot(actions[:, i], label="Actuation")
-        axs[i % 3, 0].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
-        axs[i % 3, 0].set_title(PLT_LABELS[i])
-        axs[i % 3, 0].set_xticks(xticks_locations, xticks)
-        axs[i % 3, 0].legend()
+        # Rollout data
+        axs_r[i % 3, 0].plot(observations_gt[:, i], label=f"Ground truth")
+        axs_r[i % 3, 0].plot(observations_pred[:, i], label=f"Prediction")
+        axs_r[i % 3, 0].plot(actions[:, i], label="Actuation")
+        axs_r[i % 3, 0].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
+        axs_r[i % 3, 0].set_title(PLT_LABELS[i])
+        axs_r[i % 3, 0].set_xticks(xticks_locations, xticks)
+        axs_r[i % 3, 0].legend()
 
-        axs[i % 3, 1].plot(observations_gt[:, i+3], label=f"Ground truth")
-        axs[i % 3, 1].plot(observations_pred[:, i+3], label=f"Prediction")
-        axs[i % 3, 1].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
-        axs[i % 3, 1].set_title(PLT_LABELS[i+3])
-        axs[i % 3, 1].set_xticks(xticks_locations, xticks)
-        axs[i % 3, 1].legend()
+        axs_r[i % 3, 1].plot(observations_gt[:, i+3], label=f"Ground truth")
+        axs_r[i % 3, 1].plot(observations_pred[:, i+3], label=f"Prediction")
+        axs_r[i % 3, 1].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
+        axs_r[i % 3, 1].set_title(PLT_LABELS[i+3])
+        axs_r[i % 3, 1].set_xticks(xticks_locations, xticks)
+        axs_r[i % 3, 1].legend()
+
+        # Error data
+        axs_e[i % 3, 0].plot(np.abs(observations_gt[:, i] - observations_pred[:, i]), label=f"Error")
+        axs_e[i % 3, 0].set_title(PLT_LABELS[i])
+        axs_e[i % 3, 0].set_xticks(xticks_locations, xticks)
+
+        axs_e[i % 3, 1].plot(np.abs(observations_gt[:, i+3] - observations_pred[:, i+3]), label=f"Error")
+        axs_e[i % 3, 1].set_title(PLT_LABELS[i+3])
+        axs_e[i % 3, 1].set_xticks(xticks_locations, xticks)
+
+    fig_r.suptitle(f"Epoch {epoch} - Rollout plots")
+    fig_e.suptitle(f"Epoch {epoch} - Error plots")
 
     plt.tight_layout()
 
     if save:
-        fig.savefig(save_path)
+        fig_r.savefig(os.path.join(save_path, f"rollout_{epoch}.png"))
+        fig_e.savefig(os.path.join(save_path, f"error_{epoch}.png"))
     else:
         plt.show()
