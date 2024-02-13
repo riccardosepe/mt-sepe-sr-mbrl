@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
 from models.mbrl import ReplayBuffer, lnn, reward_model_FC
+from rollout_plots import rollout_plots
 
 
 def seed_all(seed):
@@ -22,6 +23,9 @@ def train_model(resume=False, preprocess=False, seed=None):
     base_dir = f"log/model/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
+    plots_dir = os.path.join(base_dir, "plots")
+    if not os.path.isdir(plots_dir):
+        os.makedirs(plots_dir, exist_ok=True)
 
     # Set the seed
     seed_all(seed)
@@ -175,7 +179,7 @@ def train_model(resume=False, preprocess=False, seed=None):
         writer.add_scalar('transition_grad', transition_grad_mean, epoch)
         writer.add_scalar('reward_grad', reward_grad_mean, epoch)
 
-        if epoch % 25 == 0:
+        if epoch % 25 == 0 or epoch == 0:
             checkpoint = {'epoch': epoch,
                           'transition_model': transition_model.state_dict(),
                           'transition_optimizer': transition_optimizer.state_dict(),
@@ -184,6 +188,11 @@ def train_model(resume=False, preprocess=False, seed=None):
                           'replay_buffer': replay_buffer
                           }
             torch.save(checkpoint, os.path.join(base_dir, "emergency.ckpt"))
+            rollout_plots(env,
+                          transition_model,
+                          render=False,
+                          save=True,
+                          save_path=os.path.join(plots_dir, f"rollout_{epoch}.png"))
 
 
 if __name__ == "__main__":
