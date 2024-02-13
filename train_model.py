@@ -18,7 +18,7 @@ def seed_all(seed):
     random.seed(seed)
 
 
-def train_model(resume=False, seed=None):
+def train_model(resume=False, preprocess=False, seed=None):
     base_dir = f"log/model/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
@@ -38,6 +38,9 @@ def train_model(resume=False, seed=None):
     clip_term = 100
 
     batch_size = 64
+
+    # preprocess threshold
+    pth = 0.5
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -66,7 +69,7 @@ def train_model(resume=False, seed=None):
     a_scale = torch.tensor(env.a_scale, dtype=torch.float64, device=device)
     if not resume:
         replay_buffer = ReplayBuffer(replay_size, device)
-
+        pbar = tqdm(range(replay_size))
         # Initialize replay buffer with K random episodes
         for episode in tqdm(range(K)):
             o, _, _ = env.reset()
@@ -95,10 +98,14 @@ def train_model(resume=False, seed=None):
                 for i in range(n):
                     o_1_small = o_1_tensor[i, :].squeeze()
                     r_small = r_tensor[i].squeeze()
-                    replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
-                    # remove small values for bending
-                    # if not (-1. < o_tensor[0] < 1.) and not (-1. < o_1_small[0] < 1.):
-                    #     replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
+                    if preprocess:
+                        # remove small values for bending
+                        if not (-pth < o_tensor[0] < pth) and not (-pth < o_1_small[0] < pth):
+                            replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
+                            pbar.update(1)
+                    else:
+                        replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
+                        pbar.update(1)
 
                     o_tensor = o_1_small
 
@@ -183,5 +190,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Train the model")
     parser.add_argument("--resume", action="store_true", default=False, help="Resume training")
     parser.add_argument("--seed", type=int, default=None, help="seed")
+    parser.add_argument("--preprocess", action="store_true", default=False, help="Preprocess the data")
     args = parser.parse_args()
     train_model(seed=args.seed, resume=args.resume)
