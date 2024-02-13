@@ -85,7 +85,6 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     plt.tight_layout()
 
     if save:
-        # save `fig` to `save_path`
         fig.savefig(save_path)
     else:
         plt.show()
