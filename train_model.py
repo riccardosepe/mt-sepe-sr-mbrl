@@ -189,9 +189,10 @@ def train_model(resume=False, preprocess=False, seed=None):
             torch.save(checkpoint, os.path.join(base_dir, "emergency.ckpt"))
             rollout_plots(env,
                           transition_model,
+                          epoch,
                           render=False,
                           save=True,
-                          save_path=os.path.join(plots_dir, f"rollout_{epoch}.png"))
+                          save_path=plots_dir)
 
 
 if __name__ == "__main__":
