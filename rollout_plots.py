@@ -61,18 +61,25 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     # observations have shape (n_steps, 6)
     fig, axs = plt.subplots(3, 2, figsize=(15, 10))
 
+    # Currently the xticks are given by the index of the observations
+    # We should change this to the time in seconds
+    xticks_locations = np.arange(0, max_time + dt) * steps_per_second
+    xticks = np.arange(0, max_time + dt)
+
     for i in range(3):
         axs[i % 3, 0].plot(observations_gt[:, i], label=f"Ground truth")
         axs[i % 3, 0].plot(observations_pred[:, i], label=f"Prediction")
         axs[i % 3, 0].plot(actions[:, i], label="Actuation")
         axs[i % 3, 0].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs[i % 3, 0].set_title(PLT_LABELS[i])
+        axs[i % 3, 0].set_xticks(xticks_locations, xticks)
         axs[i % 3, 0].legend()
 
         axs[i % 3, 1].plot(observations_gt[:, i+3], label=f"Ground truth")
         axs[i % 3, 1].plot(observations_pred[:, i+3], label=f"Prediction")
         axs[i % 3, 1].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs[i % 3, 1].set_title(PLT_LABELS[i+3])
+        axs[i % 3, 1].set_xticks(xticks_locations, xticks)
         axs[i % 3, 1].legend()
 
     plt.tight_layout()
