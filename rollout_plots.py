@@ -90,16 +90,21 @@ def rollout_plots(env, model, epoch, render=False, save=False, save_path=None):
         # Error data
         axs_e[i % 3, 0].plot(np.abs(observations_gt[:, i] - observations_pred[:, i]), label=f"Error")
         axs_e[i % 3, 0].set_title(PLT_LABELS[i])
+        axs_e[i % 3, 0].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs_e[i % 3, 0].set_xticks(xticks_locations, xticks)
+        axs_e[i % 3, 0].legend()
 
         axs_e[i % 3, 1].plot(np.abs(observations_gt[:, i+3] - observations_pred[:, i+3]), label=f"Error")
         axs_e[i % 3, 1].set_title(PLT_LABELS[i+3])
+        axs_e[i % 3, 1].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs_e[i % 3, 1].set_xticks(xticks_locations, xticks)
+        axs_e[i % 3, 1].legend()
 
     fig_r.suptitle(f"Epoch {epoch} - Rollout plots")
-    fig_e.suptitle(f"Epoch {epoch} - Error plots")
+    fig_r.tight_layout()
 
-    plt.tight_layout()
+    fig_e.suptitle(f"Epoch {epoch} - Error plots")
+    fig_e.tight_layout()
 
     if save:
         fig_r.savefig(os.path.join(save_path, f"rollout_{epoch}.png"))
