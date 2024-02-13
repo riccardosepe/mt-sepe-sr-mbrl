@@ -13,7 +13,7 @@ if ! [[ $1 =~ ^[0-9]+$ ]]; then
     echo "Usage: bash model_train.sh <seed>"
     exit 1
 else
-    seed=$2
+    seed=$1
 fi
 
 
