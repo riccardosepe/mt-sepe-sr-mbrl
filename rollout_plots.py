@@ -37,19 +37,22 @@ def rollout_plots(env, model, epoch, render=False, save=False, save_path=None):
     observations_pred = [o_t]
     actions = []
 
-    o_t = torch.tensor(o_t).unsqueeze(0)
+    # get the device of the model
+    device = next(model.parameters()).device
+
+    o_t = torch.tensor(o_t).unsqueeze(0).to(device)
     pbar = tqdm(range(max_steps))
 
     for _ in range(max_time):
         act_ones = np.random.choice([-1, 0, 1], size=act_size)
-        act = torch.tensor(act_ones * a_bounds).unsqueeze(0)
+        act = torch.tensor(act_ones * a_bounds).unsqueeze(0).to(device)
         for _ in range(steps_per_second):
             actions.append(act_ones)
             o_t_1_gt, _, _ = env.step(act_ones)
             o_t_1_pred = model(o_t, act, train=False)
 
             observations_gt.append(o_t_1_gt[-1, :])
-            observations_pred.append(o_t_1_pred.numpy().squeeze())
+            observations_pred.append(o_t_1_pred.cpu().numpy().squeeze())
 
             o_t = o_t_1_pred
             pbar.update(1)
