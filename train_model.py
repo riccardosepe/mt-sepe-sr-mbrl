@@ -140,7 +140,9 @@ def train_model(resume=False, preprocess=False, seed=None):
         # Model learning
         transition_loss_list, reward_loss_list = [], []
         transition_grad_list, reward_grad_list = [], []
-        for model_batches in tqdm(range(10000)):
+        pbar = tqdm(range(10000))
+        for model_batches in pbar:
+            pbar.set_postfix_str(f"Epoch {epoch+1}/{num_epochs}")
             O, A, R, O_1 = replay_buffer.sample_transitions(batch_size)
 
             # Dynamics learning
