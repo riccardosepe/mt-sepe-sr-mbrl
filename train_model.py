@@ -37,7 +37,7 @@ def train_model(resume=False, preprocess=False, seed=None):
     K = 10
     lr = 3e-4
 
-    replay_size = 100000
+    replay_size = 200000
 
     clip_term = 100
 
@@ -75,7 +75,8 @@ def train_model(resume=False, preprocess=False, seed=None):
         replay_buffer = ReplayBuffer(replay_size, device)
         pbar = tqdm(range(replay_size))
         # Initialize replay buffer with K random episodes
-        for episode in tqdm(range(K)):
+        for episode in range(K):
+            pbar.set_postfix_str(f"Episode {episode+1}/{K}")
             o, _, _ = env.reset()
             o_tensor = torch.tensor(
                 o, dtype=torch.float64, device=device)
@@ -115,6 +116,8 @@ def train_model(resume=False, preprocess=False, seed=None):
 
                 if done:
                     break
+            if pbar.n >= replay_size:
+                break
 
         epoch0 = 0
         print("Done initialization ...")
