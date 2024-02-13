@@ -8,13 +8,16 @@ PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
 
 
 @torch.no_grad()
-def rollout_plots(env, model, render=False):
+def rollout_plots(env, model, render=False, save=False, save_path=None):
     """
     Rollout the model in the environment and return the trajectories.
     :param env: The environment (GT)
     :param model: The model (PRED)
     :param render: whether to render or not
+    :param save: whether to save the plots or not to a file
+    :param save_path: the path to save the plots
     """
+
     dt = env.dt
     max_time = 5  # seconds
     max_steps = int(max_time / dt)
@@ -69,4 +72,9 @@ def rollout_plots(env, model, render=False):
         axs[i % 3, 1].legend()
 
     plt.tight_layout()
-    plt.show()
+
+    if save:
+        # save `fig` to `save_path`
+        fig.savefig(save_path)
+    else:
+        plt.show()
