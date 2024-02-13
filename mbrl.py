@@ -11,6 +11,8 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+from utils import seed_all
+
 torch.set_default_dtype(torch.float64)
 
 # Model-Based RL algorithm
@@ -20,9 +22,7 @@ class MBRL:
     def __init__(self, arglist):
         self.arglist = arglist
 
-        random.seed(self.arglist.seed)
-        np.random.seed(self.arglist.seed)
-        torch.manual_seed(self.arglist.seed)
+        seed_all(self.arglist.seed)
 
         self.env = make_env(self.arglist.env)
 

@@ -10,13 +10,7 @@ from tqdm import tqdm
 from env.soft_reacher.soft_reacher import SoftReacher
 from models.mbrl import ReplayBuffer, lnn, reward_model_FC
 from rollout_plots import rollout_plots
-
-
-def seed_all(seed):
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    random.seed(seed)
+from utils import seed_all
 
 
 def train_model(resume=False, preprocess=False, seed=None):

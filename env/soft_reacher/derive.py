@@ -3,14 +3,9 @@ import time
 import dill as pickle
 from sympy import Symbol, Matrix, symbols, pi, cos, sin, simplify, integrate, Ne, Eq, diag, Array, zeros, lambdify
 
+from utils import sec_to_min
+
 pickle.settings['recurse'] = True
-
-
-# function to convert a value of seconds to a string of format "minutes: mm, seconds: ss.milliseconds"
-def sec_to_min(seconds):
-    minutes = int(seconds // 60)
-    seconds = seconds % 60
-    return f"{minutes}min, {seconds:.2f}s"
 
 
 def derive():

@@ -7,6 +7,9 @@ from copy import deepcopy
 import random
 import numpy as np
 import torch
+
+from utils import seed_all
+
 torch.set_default_dtype(torch.float64)
 
 # Soft Actor-Critic algorithm
@@ -16,9 +19,7 @@ class SAC:
     def __init__(self, arglist):
         self.arglist = arglist
 
-        random.seed(self.arglist.seed)
-        np.random.seed(self.arglist.seed)
-        torch.manual_seed(self.arglist.seed)
+        seed_all(self.arglist.seed)
 
         self.env = make_env(self.arglist.env)
         self.obs_size = self.env.obs_size
