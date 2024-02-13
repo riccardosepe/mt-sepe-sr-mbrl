@@ -24,6 +24,8 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
     act_size = env.action_size
     steps_per_second = int(1 / dt)
 
+    horizon_length = 16
+
     a_bounds = 1. * env.a_scale
 
     o_t, _, _ = env.reset()
@@ -63,11 +65,13 @@ def rollout_plots(env, model, render=False, save=False, save_path=None):
         axs[i % 3, 0].plot(observations_gt[:, i], label=f"Ground truth")
         axs[i % 3, 0].plot(observations_pred[:, i], label=f"Prediction")
         axs[i % 3, 0].plot(actions[:, i], label="Actuation")
+        axs[i % 3, 0].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs[i % 3, 0].set_title(PLT_LABELS[i])
         axs[i % 3, 0].legend()
 
         axs[i % 3, 1].plot(observations_gt[:, i+3], label=f"Ground truth")
         axs[i % 3, 1].plot(observations_pred[:, i+3], label=f"Prediction")
+        axs[i % 3, 1].axvline(x=horizon_length, color='r', linestyle='--', label="Horizon")
         axs[i % 3, 1].set_title(PLT_LABELS[i+3])
         axs[i % 3, 1].legend()
 
