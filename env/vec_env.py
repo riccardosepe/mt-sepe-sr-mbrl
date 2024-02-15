@@ -53,7 +53,10 @@ class VecEnv:
     def _step_wait(self):
         results = [remote.recv() for remote in self.remotes]
         obs, rewards, dones = zip(*results)
-        return np.stack(obs), np.stack(rewards), np.stack(dones)
+        if np.stack(obs).ndim == 3:
+            return (np.stack(obs)[:, -1]).squeeze(), (np.stack(rewards)[:, -1]).squeeze(), np.stack(dones)
+        else:
+            return np.stack(obs), np.stack(rewards), np.stack(dones)
 
     def step(self, actions):
         self._step_async(actions)
@@ -101,6 +104,6 @@ if __name__ == "__main__":
     for _ in range(100):
         actions = np.random.uniform(-1, 1, (2, 3))
         observations, rewards, dones = vec_env.step(actions)
-        # vec_env.render()
+        vec_env.render()
 
     vec_env.close()
