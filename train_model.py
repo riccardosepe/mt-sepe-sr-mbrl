@@ -178,7 +178,7 @@ def train_model(resume=False, preprocess=False, seed=None):
         writer.add_scalar('transition_grad', transition_grad_mean, epoch)
         writer.add_scalar('reward_grad', reward_grad_mean, epoch)
 
-        if epoch % 25 == 0 or epoch == 0:
+        if epoch % 25 == 0 or epoch == num_epochs - 1:
             checkpoint = {'epoch': epoch,
                           'transition_model': transition_model.state_dict(),
                           'transition_optimizer': transition_optimizer.state_dict(),
