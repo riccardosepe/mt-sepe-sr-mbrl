@@ -13,7 +13,7 @@ class AsyncState(Enum):
     WAITING_CALL = "call"
 
 
-class CustomAsyncVectorEnv:
+class VecEnv:
     def __init__(self, make_env_fn, num_envs):
         self.num_envs = num_envs
         self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(num_envs)])
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     make_pendulum_env = partial(make_env, name="soft_reacher", mle=False)
 
     # Create a vectorized environment with 16 instances of the "pendulum" environment
-    vec_env = CustomAsyncVectorEnv(make_pendulum_env, num_envs=2)
+    vec_env = VecEnv(make_pendulum_env, num_envs=2)
 
     # Reset the environment
     observations, _, _ = vec_env.reset()
