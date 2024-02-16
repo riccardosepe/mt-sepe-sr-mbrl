@@ -47,6 +47,8 @@ class BaseEnv:
 
         self._rk_method = 'DOP853'
 
+        self.reward_breakup = []
+
     def wrap_state(self):
         pass
 
@@ -124,8 +126,6 @@ class BaseEnv:
 
         self.t = 0
         self.w = np.array([0.0])
-
-        self.reward_breakup = []
 
         return self.get_obs(), 0.0, False
 
