@@ -344,3 +344,15 @@ def _test_code():
         obs.mean().backward()
 
     vec_env.close()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--resume", action="store_true", default=False)
+    parser.add_argument("--preprocess", action="store_true", default=False)
+    parser.add_argument("--seed", type=int, default=0)
+    args = parser.parse_args()
+
+    train_policy(False, args.preprocess, 1)
+    # _test_code()
+
