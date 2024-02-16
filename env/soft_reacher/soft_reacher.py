@@ -104,6 +104,9 @@ class SoftReacher(BaseEnv):
         sdot = self.F(self.inertials + [eps] + s.tolist()+a.tolist()).flatten()
         return np.concatenate((sdot, self.a_zeros, self.get_power(a, sdot)))
 
+    def set_state(self, o):
+        self.state = o / self.mask
+
     def step(self, a, da_ds=None):
         s = self.state
         a = np.clip(a, -1.0, 1.0)
