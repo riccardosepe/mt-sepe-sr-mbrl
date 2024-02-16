@@ -324,3 +324,23 @@ def evaluate(env, actor, episodes, render=False):
                 break
 
     return ep_r_list
+
+
+def _test_code():
+    # Create a partial function that will create a "pendulum" environment
+    make_pendulum_env = partial(make_env, name="soft_reacher", mle=False)
+
+    BS = 64
+
+    # Create a vectorized environment with BS instances of the "pendulum" environment
+    vec_env = VecEnv(make_pendulum_env, num_envs=BS)
+    observations, _, _ = vec_env.reset()
+
+    with torch.autograd.detect_anomaly():
+        act = torch.ones((BS, 3), requires_grad=True)
+        obs, rew = FunctionEnvironment.apply(act, vec_env)
+        print(obs, rew)
+        # rew.sum().backward()
+        obs.mean().backward()
+
+    vec_env.close()
