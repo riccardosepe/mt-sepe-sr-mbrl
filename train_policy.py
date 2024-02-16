@@ -42,9 +42,6 @@ def train_policy(resume=False, preprocess=False, seed=None):
     base_dir = f"log/policy/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
-    plots_dir = os.path.join(base_dir, "plots")
-    if not os.path.isdir(plots_dir):
-        os.makedirs(plots_dir, exist_ok=True)
 
     # Set the seed
     seed_all(seed)
