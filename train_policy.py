@@ -56,11 +56,14 @@ def train_policy(resume=False, preprocess=False, seed=None):
     gamma = 0.99
     Lambda = 0.95
 
-    replay_size = 200000
+    behaviour_batches = 1000
 
+    replay_size = 100000
     clip_term = 100
+    batch_size = 4
 
-    batch_size = 64
+    critic_target_updates = 0
+    first_update = False
 
     # preprocess threshold
     pth = 0.5
@@ -69,7 +72,7 @@ def train_policy(resume=False, preprocess=False, seed=None):
 
     writer = SummaryWriter(log_dir=tensorboard_dir)
 
-    a_zeros = None
+    # Model substitute
 
     actor = Pi_FC(env.obs_size,
                   env.action_size).to(device)
@@ -81,7 +84,6 @@ def train_policy(resume=False, preprocess=False, seed=None):
     critic_optimizer = torch.optim.AdamW(
         critic.parameters(), lr=lr)
 
-    a_scale = torch.tensor(env.a_scale, dtype=torch.float64, device=device)
     if not resume:
         replay_buffer = ReplayBuffer(replay_size, device)
         pbar = tqdm(range(replay_size))
@@ -133,8 +135,13 @@ def train_policy(resume=False, preprocess=False, seed=None):
         episode0 = 0
         print("Done initialization ...")
     else:
-        ckpt = torch.load(os.path.join(f"log/model/seed_{seed}", "emergency.ckpt"))
+        ckpt = torch.load(os.path.join(base_dir, "emergency.ckpt"))
         episode0 = ckpt['episode']
+        actor.load_state_dict(ckpt['actor'])
+        critic.load_state_dict(ckpt['critic'])
+        actor_optimizer.load_state_dict(ckpt['actor_optimizer'])
+        critic_optimizer.load_state_dict(ckpt['critic_optimizer'])
+        critic_target.load_state_dict(ckpt['critic_target'])
 
         replay_buffer = ckpt['replay_buffer']
 
@@ -148,9 +155,12 @@ def train_policy(resume=False, preprocess=False, seed=None):
 
     nan_count = 0
 
+    vec_env = VecEnv(partial(make_env, name="soft_reacher", mle=False), batch_size)
+
     for episode in range(episode0, episodes):
-        for behaviour_batches in tqdm(range(behaviour_batches)):
+        for behaviour_batch in tqdm(range(behaviour_batches)):
             O = replay_buffer.sample_states(batch_size)
+            vec_env.set_state(O)
             t = 0
             values, values_target, values_lambda, R = [], [], [], []
             log_probs = []
@@ -158,8 +168,10 @@ def train_policy(resume=False, preprocess=False, seed=None):
                 while True:
                     A, log_prob = actor(O, False, True)
                     log_probs.append(log_prob)
-                    O_1 = self.transition_model(O, A * self.a_scale, train=False)
-                    R.append(self.reward_model(O_1))
+
+                    O_1, Rs = FunctionEnvironment.apply(A, vec_env)
+
+                    R.append(Rs)
                     values.append(critic(O))
                     values_target.append(critic_target(O))
                     t += 1
