@@ -309,6 +309,8 @@ def evaluate(env, actor, episodes, render=False):
     for episode in tqdm(range(episodes)):
         o, _, _ = env.reset()
         ep_r = 0
+        rews = [0.]
+        cumrews = [0.]
         while True:
             with torch.no_grad():
                 a, _ = actor(torch.tensor(
@@ -318,11 +320,16 @@ def evaluate(env, actor, episodes, render=False):
             if render:
                 env.render()
             ep_r += r[-1]
+            rews.append(r[-1])
+            cumrews.append(ep_r)
             o = o_1[-1, :]
             if done:
                 ep_r_list.append(ep_r)
                 if render:
                     print("Episode finished with total reward ", ep_r)
+                plt.plot(rews, label="Reward")
+                # plt.plot(cumrews, label="Cumulative reward")
+                plt.show()
                 break
 
     return ep_r_list
