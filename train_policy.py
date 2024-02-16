@@ -20,6 +20,24 @@ def hard_update(target, source):
             target_param.data.copy_(param.data)
 
 
+class FunctionEnvironment(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input_act, vec_env):
+        act = input_act.detach().cpu().numpy()
+        obss, rews, _ = vec_env.step(act)
+
+        w, _, _, _ = np.linalg.lstsq(act, obss, rcond=None)
+        ctx.save_for_backward(torch.tensor(w))
+
+        return (torch.tensor(obss, dtype=torch.float64, device=input_act.device),
+                torch.tensor(rews, dtype=torch.float64, device=input_act.device))
+
+    @staticmethod
+    def backward(ctx, grad_output_obs, grad_output_rew):
+        w, = ctx.saved_tensors
+        return grad_output_obs @ w.T, None
+
+
 def train_policy(resume=False, preprocess=False, seed=None):
     base_dir = f"log/policy/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
