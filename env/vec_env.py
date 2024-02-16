@@ -31,9 +31,11 @@ class VecEnv:
             cmd, data = remote.recv()
             if cmd == 'step':
                 ob, reward, done = env.step(data)
-                if done:
-                    ob = env.reset()
+                # if done:
+                #     ob = env.reset()
                 remote.send((ob, reward, done))
+            elif cmd == 'set_state':
+                env.set_state(data)
             elif cmd == 'reset':
                 ob = env.reset()
                 remote.send(ob)
@@ -69,6 +71,10 @@ class VecEnv:
         results = [remote.recv() for remote in self.remotes]
         obs, rewards, dones = zip(*results)
         return np.stack(obs), np.stack(rewards), np.stack(dones)
+
+    def set_state(self, obs):
+        for i, remote in enumerate(self.remotes):
+            remote.send(('set_state', obs[i, :]))
 
     def render(self):
         for remote in self.remotes:
