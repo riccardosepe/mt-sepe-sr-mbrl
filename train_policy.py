@@ -1,16 +1,18 @@
 import argparse
 import os
-import random
 from copy import deepcopy
+from functools import partial
 
 import numpy as np
 import torch
+from matplotlib import pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
-from models.mbrl import ReplayBuffer, lnn, reward_model_FC, Pi_FC, V_FC
-from rollout_plots import rollout_plots
+from env.utils import make_env
+from env.vec_env import VecEnv
+from models.mbrl import ReplayBuffer, Pi_FC, V_FC
 from utils import seed_all
 
 
