@@ -40,7 +40,7 @@ class FunctionEnvironment(torch.autograd.Function):
         return grad_output_obs @ w.T, None
 
 
-def train_policy(resume=False, preprocess=False, seed=None):
+def train_policy(resume=False, preprocess=False, seed=None, num_parallel_envs=2):
     base_dir = f"log/policy/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
@@ -62,7 +62,7 @@ def train_policy(resume=False, preprocess=False, seed=None):
 
     replay_size = 100000
     clip_term = 100
-    batch_size = 4
+    batch_size = num_parallel_envs
 
     critic_target_updates = 0
     first_update = False
@@ -327,9 +327,9 @@ def evaluate(env, actor, episodes, render=False):
                 ep_r_list.append(ep_r)
                 if render:
                     print("Episode finished with total reward ", ep_r)
-                plt.plot(rews, label="Reward")
+                # plt.plot(rews, label="Reward")
                 # plt.plot(cumrews, label="Cumulative reward")
-                plt.show()
+                # plt.show()
                 break
 
     return ep_r_list
@@ -360,8 +360,11 @@ if __name__ == "__main__":
     parser.add_argument("--resume", action="store_true", default=False)
     parser.add_argument("--preprocess", action="store_true", default=False)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--num_parallel_envs", type=int, default=2)
     args = parser.parse_args()
 
-    train_policy(False, args.preprocess, 1)
+    print(f"Running with seed {args.seed} and {args.num_parallel_envs} parallel environments.")
+
+    train_policy(args.resume, args.preprocess, args.seed, args.num_parallel_envs)
     # _test_code()
 
