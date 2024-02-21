@@ -108,23 +108,46 @@ class lnn(torch.nn.Module):
         self.dt_small = dt_small
         self.n = n
 
+        lagr_hidden_dim = 30
+        d_hidden_dim = 5
+
         input_size = obs_size - self.n
         out_L = int(self.n*(self.n+1)/2)
-        self.fc1_L = torch.nn.Linear(input_size, 64)
-        self.fc2_L = torch.nn.Linear(64, 64)
-        self.fc3_L = torch.nn.Linear(64, out_L)
+
+        self.mass_network = torch.nn.Sequential(
+            torch.nn.Linear(input_size, lagr_hidden_dim),
+            torch.nn.Softplus(),
+            torch.nn.Linear(lagr_hidden_dim, lagr_hidden_dim),
+            torch.nn.Softplus(),
+            torch.nn.Linear(lagr_hidden_dim, lagr_hidden_dim),
+            torch.nn.Softplus(),
+            torch.nn.Linear(lagr_hidden_dim, out_L)
+        )
+
         if not self.env_name == "reacher":
-            self.fc1_V = torch.nn.Linear(input_size, 64)
-            self.fc2_V = torch.nn.Linear(64, 64)
-            self.fc3_V = torch.nn.Linear(64, 1)
+            self.potential_network = torch.nn.Sequential(
+                torch.nn.Linear(input_size, lagr_hidden_dim),
+                torch.nn.Softplus(),
+                torch.nn.Linear(lagr_hidden_dim, lagr_hidden_dim),
+                torch.nn.Softplus(),
+                torch.nn.Linear(lagr_hidden_dim, lagr_hidden_dim),
+                torch.nn.Softplus(),
+                torch.nn.Linear(lagr_hidden_dim, 1)
+            )
 
         if self.env_name == "soft_reacher":
             self.damping_network = torch.nn.Sequential(
-                torch.nn.Linear(input_size, 64),
-                torch.nn.Softplus(),
-                torch.nn.Linear(64, 64),
-                torch.nn.Softplus(),
-                torch.nn.Linear(64, out_L)
+                torch.nn.Linear(input_size, d_hidden_dim),
+                torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, d_hidden_dim),
+                torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, d_hidden_dim),
+                torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, d_hidden_dim),
+                torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, d_hidden_dim),
+                torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, out_L)
             )
 
         self.a_zeros = a_zeros
@@ -208,10 +231,13 @@ class lnn(torch.nn.Module):
             raise NotImplementedError
 
     def compute_L(self, q):
-        y1_L = F.softplus(self.fc1_L(q))
-        y2_L = F.softplus(self.fc2_L(y1_L))
-        y_L = self.fc3_L(y2_L)
+        y_L = self.mass_network(q)
         device = y_L.device
+        # shift = 0.005
+        # eps = 0.01
+        #
+        # l_diag_epsed_shifted = F.softplus(l_diag + shift) + eps
+
         if self.n == 1:
             L = y_L.unsqueeze(1)
 
@@ -275,6 +301,9 @@ class lnn(torch.nn.Module):
             L = torch.cat((L1.unsqueeze(1), L2.unsqueeze(
                 1), L3.unsqueeze(1), L4.unsqueeze(1)), 1)
 
+        else:
+            raise NotImplementedError
+
         return L
 
     def compute_D(self, q):
@@ -298,6 +327,8 @@ class lnn(torch.nn.Module):
         D3 = torch.cat((D31, D32, D33), 1)
         D = torch.cat(
             (D1.unsqueeze(1), D2.unsqueeze(1), D3.unsqueeze(1)), 1)
+
+        # l_diag_epsed = F.softplus(l_diag)
 
         return D
 
@@ -328,15 +359,14 @@ class lnn(torch.nn.Module):
         return L.sum(0), L
 
     def get_D(self, q):
+        scaler = 0.4
         trig_q = self.trig_transform_q(q)
-        D = self.compute_D(trig_q)
-        return D
+        y_d = self.compute_D(trig_q)
+        return y_d @ y_d.transpose(1, 2) * scaler
 
     def get_V(self, q):
         trig_q = self.trig_transform_q(q)
-        y1_V = F.softplus(self.fc1_V(trig_q))
-        y2_V = F.softplus(self.fc2_V(y1_V))
-        V = self.fc3_V(y2_V).squeeze()
+        V = self.potential_network(trig_q).squeeze()
         return V.sum()
 
     def get_acc(self, q, qdot, a):
@@ -349,9 +379,8 @@ class lnn(torch.nn.Module):
         dV_dq = 0 if self.env_name == "reacher" else jacrev(self.get_V)(q)
 
         if self.env_name == "soft_reacher":
-            LD = self.get_D(q)
-            damping_term = torch.einsum('bij, bji, bj->bi',
-                                        LD, LD, qdot)
+            D = self.get_D(q)
+            damping_term = torch.einsum('bij, bj->bi', D, qdot)
 
             qddot = torch.matmul(
                 Minv, (self.get_A(a) - c - dV_dq - damping_term).unsqueeze(2)).squeeze(2)
