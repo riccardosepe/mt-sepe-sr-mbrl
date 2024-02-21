@@ -107,7 +107,7 @@ class SoftReacher(BaseEnv):
     def set_state(self, o):
         self.state = o / self.mask
 
-    def step(self, a, da_ds=None):
+    def step(self, a, da_ds=None, last=False):
         s = self.state
         a = np.clip(a, -1.0, 1.0)
         w = self.w
@@ -128,9 +128,12 @@ class SoftReacher(BaseEnv):
         else:
             done = False
 
-        states = y1.y[:-(1+self.action_size), :].T
+        if last:
+            return self.get_obs(), self.get_reward(), done
+        else:
+            states = y1.y[:-(1+self.action_size), :].T
 
-        return self.get_obs(states), self.get_reward(states), done
+            return self.get_obs(states), self.get_reward(states), done
 
     def cartesian_from_obs(self):
         s_ps = np.linspace(0, self.l, 50)
