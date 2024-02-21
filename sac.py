@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from models.sac import ReplayBuffer, Q_FC, Pi_FC
 from env.utils import make_env
 from torch.utils.tensorboard import SummaryWriter
@@ -144,7 +146,8 @@ class SAC:
 
     def train(self):
         writer = SummaryWriter(log_dir=self.tensorboard_dir)
-        for episode in range(self.start_episode, self.arglist.episodes):
+
+        for episode in tqdm(range(self.start_episode, self.arglist.episodes)):
             o, _, _ = self.env.reset()
             ep_r = 0
             while True:
@@ -156,7 +159,7 @@ class SAC:
                 else:
                     a = np.random.uniform(-1.0, 1.0, size=self.action_size)
 
-                o_1, r, done = self.env.step(a)
+                o_1, r, done = self.env.step(a, last=True)
 
                 self.replay_buffer.push(o, a, r, o_1)
 
@@ -250,7 +253,7 @@ class SAC:
                     a, _ = self.actor(torch.tensor(
                         o, dtype=torch.float64, device=self.device).unsqueeze(0), True)
                 a = a.cpu().numpy()[0]
-                o_1, r, done = self.env.step(a)
+                o_1, r, done = self.env.step(a, last=True)
                 if render:
                     self.env.render()
                 ep_r += r
