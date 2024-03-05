@@ -60,8 +60,26 @@ class SoftReacher(BaseEnv):
 
         return eps
 
-    def reset_state(self):
-        initial_pos = np.random.uniform(low=-0.01, high=0.01, size=self.n)
+    def reset(self, wide=False, sample_goal=False):
+        self.reset_state(wide)
+
+        if self.mle:
+            self.phi = np.identity(self.phi_dim)
+
+        self.t = 0
+        self.w = np.array([0.0])
+        if sample_goal:
+            # self._sample_goal()
+            self._goal = np.random.uniform(low=-self.l, high=self.l, size=2)
+
+        return self.get_obs(), 0.0, False
+
+    def reset_state(self, wide=False):
+        if wide:
+            v = 0.5
+        else:
+            v = 0.01
+        initial_pos = np.random.uniform(low=-v, high=v, size=self.n)
         self.state = np.concatenate((initial_pos, np.zeros(self.n, )))
 
     def get_obs(self, bunch_of_states=None):

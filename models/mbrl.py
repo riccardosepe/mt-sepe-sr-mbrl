@@ -158,7 +158,7 @@ class lnn(torch.nn.Module):
         # step_method = to.Euler(term=term)
         # step_method = to.Dopri5(term=term)
         # step_size_controller = to.FixedStepController()
-        step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, term=term)
+        step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt_small**2, term=term)
         solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
         self.solver = torch.compile(solver)
 

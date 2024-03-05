@@ -37,7 +37,8 @@ def main(args):
             continue
         # create the export folder
         os.makedirs(export_path, exist_ok=True)
-        max_ckpt = max([int(ckpt.split(".")[0]) for ckpt in os.listdir(model_path) if ckpt.split(".")[0] != 'emergency'])
+        max_ckpt = max([int(ckpt.split(".")[0])
+                       for ckpt in os.listdir(model_path) if ckpt.split(".")[0] != 'emergency'])
         # get the path to the highest .ckpt file
         max_ckpt_path = os.path.join(model_path, f"{max_ckpt}.ckpt")
         # copy the tensorboard folder to the export folder

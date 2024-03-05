@@ -1,24 +1,25 @@
-import sys
-
-from models.mbrl import ReplayBuffer, V_FC, Pi_FC, dnn, lnn, reward_model_FC
-from env.utils import make_env
-from torch.utils.tensorboard import SummaryWriter
-import os
 import argparse
+import os
+import sys
 from copy import deepcopy
-import random
+
 import numpy as np
 import torch
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from utils import seed_all
+from env.utils import make_env
+from models.mbrl import ReplayBuffer, V_FC, Pi_FC, dnn, lnn, reward_model_FC
+from utils.utils import seed_all, hard_update
 
 torch.set_default_dtype(torch.float64)
 
-# Model-Based RL algorithm
-
 
 class MBRL:
+    """
+    Model-Based Reinforcement Learning
+    """
+
     def __init__(self, arglist):
         self.arglist = arglist
 
@@ -42,6 +43,10 @@ class MBRL:
             self.critic = V_FC(self.env.obs_size).to(self.device)
             self.critic_target = deepcopy(self.critic)
 
+            self.reward_model = reward_model_FC(
+                self.env.obs_size).to(self.device)
+            self.reward_loss_fn = torch.nn.L1Loss()
+
             if self.arglist.model == "lnn":
                 if self.env.action_size < self.env.n:
                     a_zeros = torch.zeros(self.arglist.batch_size,
@@ -59,14 +64,15 @@ class MBRL:
                     self.env.dt_small,
                     a_zeros).to(self.device)
 
+                if self.arglist.model_path is not None and not self.arglist.resume:
+                    checkpoint = torch.load(self.arglist.model_path, map_location=self.device)
+                    self.transition_model.load_state_dict(checkpoint['transition_model'], strict=False)
+                    self.reward_model.load_state_dict(checkpoint['reward_model'])
+
             elif self.arglist.model == "dnn":
                 self.transition_model = dnn(
                     self.env.obs_size, self.env.action_size).to(self.device)
             self.transition_loss_fn = torch.nn.L1Loss()
-
-            self.reward_model = reward_model_FC(
-                self.env.obs_size).to(self.device)
-            self.reward_loss_fn = torch.nn.L1Loss()
 
             if self.arglist.resume:
                 checkpoint = torch.load(os.path.join(
@@ -150,11 +156,6 @@ class MBRL:
                       'replay_buffer': self.replay_buffer
                       }
         torch.save(checkpoint, os.path.join(self.model_dir, "emergency.ckpt"))
-
-    def hard_update(self, target, source):
-        with torch.no_grad():
-            for target_param, param in zip(target.parameters(), source.parameters()):
-                target_param.data.copy_(param.data)
 
     def train(self):
         critic_target_updates = 0
@@ -319,7 +320,7 @@ class MBRL:
                         critic_target_updates = (critic_target_updates+1) % 100
                         if critic_target_updates == 0 or not first_update:
                             first_update = True
-                            self.hard_update(self.critic_target, self.critic)
+                            hard_update(self.critic_target, self.critic)
 
                         actor_loss_list.append(actor_loss.item())
                         critic_loss_list.append(critic_loss.item())
@@ -451,6 +452,8 @@ def parse_args():
                         help="eval every _ episodes during training")
     parser.add_argument("--eval-over", type=int, default=50,
                         help="each time eval over _ episodes")
+    parser.add_argument("--model-path", type=str, default=None, help="path to pretrained model weights")
+
     # Eval settings
     parser.add_argument("--checkpoint", type=str,
                         default="", help="path to checkpoint")
@@ -462,39 +465,3 @@ def parse_args():
 if __name__ == '__main__':
     arglist = parse_args()
     mbrl = MBRL(arglist)
-
-
-# import torch
-# import torch.nn as nn
-#
-# class CustomLoss(nn.Module):
-#     def __init__(self):
-#         super(CustomLoss, self).__init__()
-#
-#     def forward(self, pred, target):
-#         mse_loss = nn.MSELoss()(pred, target)
-#         penalty = torch.where(pred > 5, (pred - 5)**2, torch.zeros_like(pred))
-#         return mse_loss + penalty.mean()
-
-# import torch
-# import torch.nn as nn
-#
-# # Suppose 'output' is your model's output and 'target' is the ground truth
-# output = ...
-# target = ...
-#
-# # Create a mask where True indicates that an entry contains no NaN values
-# mask = ~torch.any(torch.isnan(output), dim=1)
-#
-# # Count the number of entries that will be ignored (i.e., the sum of the inverted mask)
-# ignored_count = (~mask).sum().item()
-#
-# # Use the mask to select entries with no NaN values
-# output = output[mask]
-# target = target[mask]
-#
-# # Compute the loss on selected entries
-# criterion = nn.MSELoss()  # or any other loss function you are using
-# loss = criterion(output, target)
-#
-# print(f"Ignored {ignored_count} entries containing NaN values in this iteration")

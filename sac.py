@@ -1,23 +1,24 @@
-from tqdm import tqdm
-
-from models.sac import ReplayBuffer, Q_FC, Pi_FC
-from env.utils import make_env
-from torch.utils.tensorboard import SummaryWriter
-import os
 import argparse
+import os
 from copy import deepcopy
-import random
+
 import numpy as np
 import torch
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
-from utils import seed_all
+from env.utils import make_env
+from models.sac import ReplayBuffer, Q_FC, Pi_FC
+from utils.utils import soft_update, seed_all
 
 torch.set_default_dtype(torch.float64)
 
-# Soft Actor-Critic algorithm
-
 
 class SAC:
+    """
+    Soft Actor-Critic algorithm
+    """
+
     def __init__(self, arglist):
         self.arglist = arglist
 
@@ -138,12 +139,6 @@ class SAC:
                       }
         torch.save(checkpoint, os.path.join(self.model_dir, "backup.ckpt"))
 
-    def soft_update(self, target, source, tau):
-        with torch.no_grad():
-            for target_param, param in zip(target.parameters(), source.parameters()):
-                target_param.data.copy_(
-                    (1.0 - tau) * target_param.data + tau * param.data)
-
     def train(self):
         writer = SummaryWriter(log_dir=self.tensorboard_dir)
 
@@ -222,10 +217,8 @@ class SAC:
                         param_1.requires_grad = True
                         param_2.requires_grad = True
 
-                    self.soft_update(self.critic_target_1,
-                                     self.critic_1, self.arglist.tau)
-                    self.soft_update(self.critic_target_2,
-                                     self.critic_2, self.arglist.tau)
+                    soft_update(self.critic_target_1, self.critic_1, self.arglist.tau)
+                    soft_update(self.critic_target_2, self.critic_2, self.arglist.tau)
 
                 if done:
                     writer.add_scalar('ep_r', ep_r, episode)

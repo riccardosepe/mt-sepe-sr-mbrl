@@ -3,7 +3,7 @@ import time
 import dill as pickle
 from sympy import Symbol, Matrix, symbols, pi, cos, sin, simplify, integrate, Ne, Eq, diag, Array, zeros, lambdify
 
-from utils import sec_to_min
+from utils.utils import sec_to_min
 
 pickle.settings['recurse'] = True
 
@@ -89,7 +89,7 @@ def derive():
             for k in range(num_dof):
                 # Ch[i, j, k] = simplify(0.5 * (B[i, j].diff(q[k]) + B[i, k].diff(q[j]) - B[j, k].diff(q[i])))
                 Ch_ijk = 0.5 * (
-                        B[i, j].diff(q_orig[k]) + B[i, k].diff(q_orig[j]) - B[j, k].diff(q_orig[i])
+                    B[i, j].diff(q_orig[k]) + B[i, k].diff(q_orig[j]) - B[j, k].diff(q_orig[i])
                 )
                 Ch_ijk = simplify(Ch_ijk)
                 Ch_flat.append(Ch_ijk)
