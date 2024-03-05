@@ -1,9 +1,11 @@
 import random
 from collections import deque
-from torch.distributions.normal import Normal
-import torch.nn.functional as F
+
 import numpy as np
 import torch
+import torch.nn.functional as F
+from torch.distributions.normal import Normal
+
 torch.set_default_dtype(torch.float64)
 
 # Experience replay buffer

@@ -1,6 +1,5 @@
 import argparse
 import os
-import random
 
 import numpy as np
 import torch
@@ -9,7 +8,7 @@ from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
 from models.mbrl import ReplayBuffer, lnn, reward_model_FC
-from utils import seed_all
+from utils.utils import seed_all
 from visualization.rollout_plots import rollout_plots
 
 

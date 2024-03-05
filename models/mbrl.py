@@ -1,11 +1,12 @@
 import random
 from collections import deque
-from torch.func import jacrev
-from torch.distributions.normal import Normal
-import torch.nn.functional as F
-import numpy as np
+
 import torch
+import torch.nn.functional as F
 import torchode as to
+from torch.distributions.normal import Normal
+from torch.func import jacrev
+
 torch.set_default_dtype(torch.float64)
 
 # Experience replay buffer
