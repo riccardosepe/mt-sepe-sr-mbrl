@@ -35,4 +35,4 @@ export SBATCH_JOB_NAME=model_train_"$seed"
 # The maximum time the job can run for
 export SBATCH_TIMELIMIT="60:00:00"
 
-sbatch  cluster/sbatch/$cluster.sbatch train_model.py --seed "$seed"
+sbatch  cluster/sbatch/$cluster.sbatch separate_trainings/train_model.py --seed "$seed"

@@ -35,4 +35,4 @@ export SBATCH_JOB_NAME=policy_train_"$seed"
 # The maximum time the job can run for
 export SBATCH_TIMELIMIT="60:00:00"
 
-sbatch  cluster/sbatch/"$cluster"_policy.sbatch train_policy.py --seed "$seed" --num_parallel_envs 64
+sbatch  cluster/sbatch/"$cluster"_policy.sbatch separate_trainings/train_policy.py --seed "$seed" --num_parallel_envs 64
