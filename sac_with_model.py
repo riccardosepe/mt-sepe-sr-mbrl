@@ -52,7 +52,7 @@ class SAC:
             # set target entropy to -|A|
             self.target_entropy = - self.action_size
 
-            path = "./log/"+self.env.name+"/sac"
+            path = "./log/"+self.env.name+"/sac_on_model"
             self.exp_dir = os.path.join(path, "seed_"+str(self.arglist.seed))
             self.model_dir = os.path.join(self.exp_dir, "models")
             self.tensorboard_dir = os.path.join(self.exp_dir, "tensorboard")
