@@ -48,4 +48,4 @@ export SBATCH_JOB_NAME="sac_""$environment"_"$seed"
 export SBATCH_TIMELIMIT="100:00:00"
 
 
-sbatch  cluster/sbatch/$cluster.sbatch sac.py --env "$environment" --mode train --episodes 500 --seed "$seed" --model-path weights/model.ckpt
+sbatch  cluster/sbatch/$cluster.sbatch sac_with_model.py --env "$environment" --mode train --episodes 500 --seed "$seed" --model-path weights/best_model.ckpt
