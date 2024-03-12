@@ -42,7 +42,7 @@ fi
 
 # The following variables are used by the sbatch scripts
 # The name of the job
-export SBATCH_JOB_NAME="sac_""$environment"_"$seed"
+export SBATCH_JOB_NAME="sac_model_""$environment"_"$seed"
 
 # The maximum time the job can run for
 export SBATCH_TIMELIMIT="100:00:00"
