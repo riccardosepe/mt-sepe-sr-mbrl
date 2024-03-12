@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from env.utils import make_env
-from models.sac import ReplayBuffer, Q_FC, Pi_FC
+from models.sac import ReplayBuffer, ActionValueCritic, Actor
 from utils.utils import soft_update, seed_all
 
 torch.set_default_dtype(torch.float64)
@@ -31,15 +31,15 @@ class SAC:
         self.device = torch.device(
             "cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-        self.actor = Pi_FC(self.obs_size, self.action_size).to(self.device)
+        self.actor = Actor(self.obs_size, self.action_size).to(self.device)
 
         if self.arglist.mode == "train":
-            self.critic_1 = Q_FC(
+            self.critic_1 = ActionValueCritic(
                 self.obs_size, self.action_size).to(self.device)
             self.critic_target_1 = deepcopy(self.critic_1)
             self.critic_loss_fn_1 = torch.nn.MSELoss()
 
-            self.critic_2 = Q_FC(
+            self.critic_2 = ActionValueCritic(
                 self.obs_size, self.action_size).to(self.device)
             self.critic_target_2 = deepcopy(self.critic_2)
             self.critic_loss_fn_2 = torch.nn.MSELoss()

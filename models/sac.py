@@ -8,10 +8,11 @@ from torch.distributions.normal import Normal
 
 torch.set_default_dtype(torch.float64)
 
-# Experience replay buffer
-
 
 class ReplayBuffer:
+    """
+    Experience replay buffer
+    """
     def __init__(self, capacity, device):
         self.buffer = deque(maxlen=capacity)
         self.device = device
@@ -30,12 +31,13 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.buffer)
 
-# Critic network
 
-
-class Q_FC(torch.nn.Module):
+class ActionValueCritic(torch.nn.Module):
+    """
+    Critic MLP network of state-action-value function
+    """
     def __init__(self, obs_size, action_size):
-        super(Q_FC, self).__init__()
+        super(ActionValueCritic, self).__init__()
         self.fc1 = torch.nn.Linear(obs_size+action_size, 256)
         self.fc2 = torch.nn.Linear(256, 256)
         self.fc3 = torch.nn.Linear(256, 1)
@@ -46,12 +48,13 @@ class Q_FC(torch.nn.Module):
         y = self.fc3(y2).view(-1)
         return y
 
-# Actor network
 
-
-class Pi_FC(torch.nn.Module):
+class Actor(torch.nn.Module):
+    """
+    Actor MLP network
+    """
     def __init__(self, obs_size, action_size):
-        super(Pi_FC, self).__init__()
+        super(Actor, self).__init__()
         self.fc1 = torch.nn.Linear(obs_size, 256)
         self.fc2 = torch.nn.Linear(256, 256)
         self.mu = torch.nn.Linear(256, action_size)
