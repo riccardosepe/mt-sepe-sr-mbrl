@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 from env.model_env import ModelEnv
-from models.sac_with_model import ReplayBuffer, Q_FC, Pi_FC
+from models.sac_with_model import ReplayBuffer, ActionValueCritic, Actor
 from env.utils import make_env
 from torch.utils.tensorboard import SummaryWriter
 import os
@@ -32,19 +32,19 @@ class SAC:
         self.obs_size = self.env.obs_size
         self.action_size = self.env.action_size
 
-        self.actor = Pi_FC(self.obs_size, self.action_size).to(self.device)
+        self.actor = Actor(self.obs_size, self.action_size).to(self.device)
 
         if self.arglist.mode == "train":
             if self.arglist.model_path is None:
                 raise ValueError("Model path is needed for training")
             self.model = ModelEnv(self.arglist.model_path, self.env)
 
-            self.critic_1 = Q_FC(
+            self.critic_1 = ActionValueCritic(
                 self.obs_size, self.action_size).to(self.device)
             self.critic_target_1 = deepcopy(self.critic_1)
             self.critic_loss_fn_1 = torch.nn.MSELoss()
 
-            self.critic_2 = Q_FC(
+            self.critic_2 = ActionValueCritic(
                 self.obs_size, self.action_size).to(self.device)
             self.critic_target_2 = deepcopy(self.critic_2)
             self.critic_loss_fn_2 = torch.nn.MSELoss()
