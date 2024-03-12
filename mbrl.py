@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from env.utils import make_env
-from models.mbrl import ReplayBuffer, V_FC, Pi_FC, dnn, lnn, reward_model_FC
+from models.mbrl import ReplayBuffer, ValueCritic, Actor, MLP, LNN, RewardMLP
 from utils.utils import seed_all, hard_update
 
 torch.set_default_dtype(torch.float64)
@@ -36,14 +36,14 @@ class MBRL:
         self.model_dir = os.path.join(self.exp_dir, "models")
         self.tensorboard_dir = os.path.join(self.exp_dir, "tensorboard")
 
-        self.actor = Pi_FC(self.env.obs_size,
+        self.actor = Actor(self.env.obs_size,
                            self.env.action_size).to(self.device)
 
         if self.arglist.mode == "train":
-            self.critic = V_FC(self.env.obs_size).to(self.device)
+            self.critic = ValueCritic(self.env.obs_size).to(self.device)
             self.critic_target = deepcopy(self.critic)
 
-            self.reward_model = reward_model_FC(
+            self.reward_model = RewardMLP(
                 self.env.obs_size).to(self.device)
             self.reward_loss_fn = torch.nn.L1Loss()
 
@@ -55,7 +55,7 @@ class MBRL:
                                           device=self.device)
                 else:
                     a_zeros = None
-                self.transition_model = lnn(
+                self.transition_model = LNN(
                     self.env.name,
                     self.env.n,
                     self.env.obs_size,
@@ -70,7 +70,7 @@ class MBRL:
                     self.reward_model.load_state_dict(checkpoint['reward_model'])
 
             elif self.arglist.model == "dnn":
-                self.transition_model = dnn(
+                self.transition_model = MLP(
                     self.env.obs_size, self.env.action_size).to(self.device)
             self.transition_loss_fn = torch.nn.L1Loss()
 

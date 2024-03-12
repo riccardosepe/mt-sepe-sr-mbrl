@@ -8,7 +8,7 @@ from scipy import stats
 from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
-from models.mbrl import lnn
+from models.mbrl import LNN
 
 PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     env = SoftReacher(mle=False)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    models = [lnn(
+    models = [LNN(
         env.name,
         env.n,
         env.obs_size,

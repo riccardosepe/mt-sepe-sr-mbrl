@@ -11,7 +11,7 @@ from tqdm import tqdm
 from env.soft_reacher.soft_reacher import SoftReacher
 from env.utils import make_env
 from env.vec_env import VecEnv
-from models.mbrl import ReplayBuffer, Pi_FC, V_FC
+from models.mbrl import ReplayBuffer, Actor, ValueCritic
 from utils.utils import seed_all
 
 
@@ -75,9 +75,9 @@ def train_policy(resume=False, preprocess=False, seed=None, num_parallel_envs=2)
 
     # Model substitute
 
-    actor = Pi_FC(env.obs_size,
+    actor = Actor(env.obs_size,
                   env.action_size).to(device)
-    critic = V_FC(env.obs_size).to(device)
+    critic = ValueCritic(env.obs_size).to(device)
     critic_target = deepcopy(critic)
 
     actor_optimizer = torch.optim.AdamW(

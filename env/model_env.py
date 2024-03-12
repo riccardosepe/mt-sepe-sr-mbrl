@@ -1,10 +1,3 @@
-# checkpoint = {'epoch': epoch,
-#               'transition_model': transition_model.state_dict(),
-#               'transition_optimizer': transition_optimizer.state_dict(),
-#               'reward_model': reward_model.state_dict(),
-#               'reward_optimizer': reward_optimizer.state_dict(),
-#               'replay_buffer': replay_buffer
-#               }
 import os
 
 import numpy as np
@@ -13,7 +6,7 @@ import torch
 
 from env.base import BaseEnv
 from env.utils import make_env, create_background
-from models.mbrl import lnn, reward_model_FC
+from models.mbrl import LNN, RewardMLP, MLP
 
 import dill as pickle
 pickle.settings['recurse'] = True
@@ -27,7 +20,7 @@ class ModelEnv(BaseEnv):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         a_zeros = None
-        transition_model = lnn(
+        transition_model = LNN(
             env.name,
             env.n,
             env.obs_size,
@@ -35,7 +28,7 @@ class ModelEnv(BaseEnv):
             env.dt,
             env.dt_small,
             a_zeros).to(self.device)
-        reward_model = reward_model_FC(env.obs_size).to(self.device)
+        reward_model = RewardMLP(env.obs_size).to(self.device)
 
         self.l = env.l
         self.r = env.r

@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from env.soft_reacher.soft_reacher import SoftReacher
-from models.mbrl import ReplayBuffer, lnn, reward_model_FC
+from models.mbrl import ReplayBuffer, LNN, RewardMLP
 from utils.utils import seed_all
 from visualization.rollout_plots import rollout_plots
 
@@ -44,7 +44,7 @@ def train_model(resume=False, preprocess=False, seed=None):
     writer = SummaryWriter(log_dir=tensorboard_dir)
 
     a_zeros = None
-    transition_model = lnn(
+    transition_model = LNN(
         env.name,
         env.n,
         env.obs_size,
@@ -55,7 +55,7 @@ def train_model(resume=False, preprocess=False, seed=None):
 
     transition_loss_fn = torch.nn.L1Loss()
 
-    reward_model = reward_model_FC(env.obs_size).to(device)
+    reward_model = RewardMLP(env.obs_size).to(device)
     reward_loss_fn = torch.nn.L1Loss()
 
     transition_optimizer = torch.optim.AdamW(
