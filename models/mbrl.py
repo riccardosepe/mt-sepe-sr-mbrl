@@ -88,17 +88,18 @@ class Actor(torch.nn.Module):
 
 
 class MLP(torch.nn.Module):
-    def __init__(self, obs_size, action_size):
+    def __init__(self, obs_size, action_size, hidden_dim=64):
         super(MLP, self).__init__()
-        self.fc1 = torch.nn.Linear(obs_size+action_size, 64)
-        self.fc2 = torch.nn.Linear(64, 64)
-        self.fc3 = torch.nn.Linear(64, obs_size)
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(obs_size+action_size, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, hidden_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_dim, obs_size)
+        )
 
-    def forward(self, x, a):
-        y1 = F.relu(self.fc1(torch.cat((x, a), 1)))
-        y2 = F.relu(self.fc2(y1))
-        y = self.fc3(y2)
-        return y
+    def forward(self, x, a, **kwargs):
+        return self.mlp(torch.cat((x, a), 1))
 
 
 class LNN(torch.nn.Module):
