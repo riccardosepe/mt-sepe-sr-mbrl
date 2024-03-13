@@ -33,6 +33,6 @@ fi
 export SBATCH_JOB_NAME=model_mlp_train_"$seed"
 
 # The maximum time the job can run for
-export SBATCH_TIMELIMIT="3:00:00"
+export SBATCH_TIMELIMIT="15:00:00"
 
 sbatch  cluster/sbatch/$cluster.sbatch train_model_mlp.py --seed "$seed"
