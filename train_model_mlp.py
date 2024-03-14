@@ -12,7 +12,7 @@ from utils.utils import seed_all
 from visualization.rollout_plots import rollout_plots
 
 
-def train_model(resume=False, preprocess=False, seed=None):
+def train_model(resume=False, seed=None, lr=3e-4):
     base_dir = f"log/model_mlp/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
@@ -27,7 +27,6 @@ def train_model(resume=False, preprocess=False, seed=None):
     env = SoftReacher(mle=False)
 
     tensorboard_dir = os.path.join(base_dir, "tensorboard")
-    lr = 3e-4
     clip_term = 100
 
     batch_size = 64
@@ -136,5 +135,6 @@ if __name__ == "__main__":
     parser.add_argument("--resume", action="store_true", default=False, help="Resume training")
     parser.add_argument("--seed", type=int, default=None, help="seed")
     parser.add_argument("--preprocess", action="store_true", default=False, help="Preprocess the data")
+    parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
     args = parser.parse_args()
-    train_model(seed=args.seed, resume=args.resume)
+    train_model(seed=args.seed, resume=args.resume, lr=args.lr)
