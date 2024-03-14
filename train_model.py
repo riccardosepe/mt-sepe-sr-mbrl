@@ -58,6 +58,7 @@ def train_model(resume=False, seed=None, lr=3e-4):
 
     data = torch.load("data/seed_27/data.pt")
     replay_buffer = data["large"]
+    replay_buffer.device = device
 
     if not resume:
         epoch0 = 0

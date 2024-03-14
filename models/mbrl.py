@@ -23,11 +23,14 @@ class ReplayBuffer:
 
     def sample_transitions(self, batch_size):
         O, A, R, O_1 = zip(*random.sample(self.buffer, batch_size))
-        return torch.stack(O), torch.stack(A), torch.stack(R), torch.stack(O_1)
+        return (torch.stack(O).to(self.device),
+                torch.stack(A).to(self.device),
+                torch.stack(R).to(self.device),
+                torch.stack(O_1).to(self.device))
 
     def sample_states(self, batch_size):
         O, A, R, O_1 = zip(*random.sample(self.buffer, batch_size))
-        return torch.stack(O)
+        return torch.stack(O).to(self.device)
 
     def __len__(self):
         return len(self.buffer)
