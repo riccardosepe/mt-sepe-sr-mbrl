@@ -12,7 +12,7 @@ from utils.utils import seed_all
 from visualization.rollout_plots import rollout_plots
 
 
-def train_model(resume=False, preprocess=False, seed=None):
+def train_model(resume=False, seed=None):
     base_dir = f"log/model/seed_{seed}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
@@ -27,18 +27,10 @@ def train_model(resume=False, preprocess=False, seed=None):
     env = SoftReacher(mle=False)
 
     tensorboard_dir = os.path.join(base_dir, "tensorboard")
-    K = 10
     lr = 3e-4
-
-    replay_size = 200000
-
     clip_term = 100
 
     batch_size = 64
-
-    # preprocess threshold
-    pth = 0.5
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     writer = SummaryWriter(log_dir=tensorboard_dir)
@@ -64,56 +56,12 @@ def train_model(resume=False, preprocess=False, seed=None):
         reward_model.parameters(), lr=lr)
 
     a_scale = torch.tensor(env.a_scale, dtype=torch.float64, device=device)
+
+    data = torch.load("data/seed_27/data.pt")
+    replay_buffer = data["large"]
+
     if not resume:
-        replay_buffer = ReplayBuffer(replay_size, device)
-        pbar = tqdm(range(replay_size))
-        # Initialize replay buffer with K random episodes
-        for episode in range(K):
-            pbar.set_postfix_str(f"Episode {episode+1}/{K}")
-            o, _, _ = env.reset()
-            o_tensor = torch.tensor(
-                o, dtype=torch.float64, device=device)
-            while True:
-                a = np.random.uniform(-1.0, 1.0, size=env.action_size)
-                o_1, r, done = env.step(a)
-                a_tensor = torch.tensor(
-                    a, dtype=torch.float64, device=device)
-                o_1_tensor = torch.tensor(
-                    o_1, dtype=torch.float64, device=device)
-                r_tensor = torch.tensor(
-                    r, dtype=torch.float64, device=device)
-                # Here there is the first big change:
-                #  - o_tensor is a tensor of shape (D,)
-                #  - a_tensor is a tensor of shape (A,)
-                #  - r_tensor is a tensor of shape (N, 1)
-                #  - o_1 is a tensor of shape (N, D), where:
-                #  - B is batch size, for example 64
-                #  - D is the observation size, in this case 6
-                #  - A is the action size, in this case 3
-                # - N is the number of intermediate observations returned by the environment, i.e. dt_large/dt_small
-                # NB: N is most likely between 50 and 100
-                n = int(env.dt / env.dt_small)
-                for i in range(n):
-                    o_1_small = o_1_tensor[i, :].squeeze()
-                    r_small = r_tensor[i].squeeze()
-                    if preprocess:
-                        # remove small values for bending
-                        if not (-pth < o_tensor[0] < pth) and not (-pth < o_1_small[0] < pth):
-                            replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
-                            pbar.update(1)
-                    else:
-                        replay_buffer.push(o_tensor, a_tensor, r_small, o_1_small)
-                        pbar.update(1)
-
-                    o_tensor = o_1_small
-
-                if done:
-                    break
-            if pbar.n >= replay_size:
-                break
-
         epoch0 = 0
-        print("Done initialization ...")
     else:
         ckpt = torch.load(os.path.join(f"log/model/seed_{seed}", "emergency.ckpt"))
         epoch0 = ckpt['epoch']
@@ -122,8 +70,6 @@ def train_model(resume=False, preprocess=False, seed=None):
 
         transition_optimizer.load_state_dict(ckpt['transition_optimizer'])
         reward_optimizer.load_state_dict(ckpt['reward_optimizer'])
-
-        replay_buffer = ckpt['replay_buffer']
 
         print("Loaded checkpoint")
 
@@ -183,7 +129,6 @@ def train_model(resume=False, preprocess=False, seed=None):
                           'transition_optimizer': transition_optimizer.state_dict(),
                           'reward_model': reward_model.state_dict(),
                           'reward_optimizer': reward_optimizer.state_dict(),
-                          'replay_buffer': replay_buffer
                           }
             torch.save(checkpoint, os.path.join(base_dir, "emergency.ckpt"))
             rollout_plots(env,
