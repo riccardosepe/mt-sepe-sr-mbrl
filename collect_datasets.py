@@ -31,7 +31,7 @@ def main(seed):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     data_large = ReplayBuffer(large_data_size, device)
-    data_small = ReplayBuffer(large_data_size, device)
+    data_small = ReplayBuffer(small_data_size, device)
     pbar = tqdm(range(large_data_size))
     # Initialize replay buffer with K random episodes
     for episode in range(K):
