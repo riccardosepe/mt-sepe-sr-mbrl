@@ -13,7 +13,7 @@ from visualization.rollout_plots import rollout_plots
 
 
 def train_model(resume=False, seed=None, lr=3e-4):
-    base_dir = f"log/model/seed_{seed}"
+    base_dir = f"log/model/seed_{seed}_lr_{lr}"
     if os.path.isdir(base_dir) and not resume:
         raise FileExistsError(f"Folder {base_dir} already exists.")
     plots_dir = os.path.join(base_dir, "plots")
