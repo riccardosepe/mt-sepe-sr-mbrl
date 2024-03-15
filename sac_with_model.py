@@ -35,9 +35,11 @@ class SAC:
         self.actor = Actor(self.obs_size, self.action_size).to(self.device)
 
         if self.arglist.mode == "train":
-            if self.arglist.model_path is None:
-                raise ValueError("Model path is needed for training")
-            self.model = ModelEnv(self.arglist.model_path, self.env)
+            model_path = f"./weights/best_model_{self.arglist.model_type}.ckpt"
+            if not os.path.isfile(model_path):
+                raise FileNotFoundError(
+                    f"Model file {model_path} not found.")
+            self.model = ModelEnv(model_path, self.env, model_type=self.arglist.model_type)
 
             self.critic_1 = ActionValueCritic(
                 self.obs_size, self.action_size).to(self.device)
@@ -52,7 +54,7 @@ class SAC:
             # set target entropy to -|A|
             self.target_entropy = - self.action_size
 
-            path = "./log/"+self.env.name+"/sac_on_model"
+            path = os.path.join(".", "log", self.env.name, f"sac_on_{self.arglist.model_type}")
             self.exp_dir = os.path.join(path, "seed_"+str(self.arglist.seed))
             self.model_dir = os.path.join(self.exp_dir, "models")
             self.tensorboard_dir = os.path.join(self.exp_dir, "tensorboard")
@@ -290,8 +292,7 @@ def parse_args():
     # Common settings
     parser.add_argument("--env", type=str, default="cart3pole",
                         help="pendulum / reacher / cartpole / acrobot / cart2pole / acro3bot / cart3pole")
-    parser.add_argument("--model-path", type=str, default=None,
-                        help="path to trained model")
+    parser.add_argument("--model-type", type=str, default="lnn", help="mlp / lnn")
     parser.add_argument("--mode", type=str,
                         default="train", help="train or eval")
     parser.add_argument("--episodes", type=int,
