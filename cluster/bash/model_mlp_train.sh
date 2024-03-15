@@ -1,16 +1,22 @@
 #!/bin/bash
 
-# if number of cmd arguments is different from 2, print error message and exit
-if [ "$#" -ne 1 ]; then
+# if number of cmd arguments is different from 1 or 2, print error message and exit
+if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: bash model_train.sh <seed>"
+    echo "Usage: bash model_train.sh <seed> [learning_rate]"
     exit 1
+fi
+
+if [ "$2" == "" ]; then
+    learning_rate_param=""
+else
+    learning_rate_param="--lr $2"
 fi
 
 # second argument must be an integer
 if ! [[ $1 =~ ^[0-9]+$ ]]; then
     echo "Error: <seed> must be an integer."
-    echo "Usage: bash model_train.sh <seed>"
+    echo "Usage: bash model_train.sh <seed> [learning_rate]"
     exit 1
 else
     seed=$1
@@ -35,4 +41,6 @@ export SBATCH_JOB_NAME=model_mlp_train_"$seed"
 # The maximum time the job can run for
 export SBATCH_TIMELIMIT="15:00:00"
 
-sbatch  cluster/sbatch/$cluster.sbatch train_model_mlp.py --seed "$seed"
+sbatch  cluster/sbatch/$cluster.sbatch train_model_mlp.py --seed "$seed" $learning_rate_param
+
+
