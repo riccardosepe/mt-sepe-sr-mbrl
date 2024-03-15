@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import pygame
@@ -15,19 +16,24 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 
 class ModelEnv(BaseEnv):
-    def __init__(self, path, env, batch_size=64):
+    def __init__(self, path, env, batch_size=64, model_type='lnn'):
 
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        a_zeros = None
-        transition_model = LNN(
-            env.name,
-            env.n,
-            env.obs_size,
-            env.action_size,
-            env.dt,
-            env.dt_small,
-            a_zeros).to(self.device)
+        if model_type == 'lnn':
+            a_zeros = None
+            transition_model = LNN(
+                env.name,
+                env.n,
+                env.obs_size,
+                env.action_size,
+                env.dt,
+                env.dt_small,
+                a_zeros).to(self.device)
+        elif model_type == 'mlp':
+            transition_model = MLP(env.obs_size, env.action_size).to(self.device)
+        else:
+            raise ValueError("Model type not recognized")
         reward_model = RewardMLP(env.obs_size).to(self.device)
 
         self.l = env.l
@@ -37,7 +43,8 @@ class ModelEnv(BaseEnv):
         self._eps = 1e-2
 
         checkpoint = torch.load(path, map_location=self.device)
-        transition_model.load_state_dict(checkpoint['transition_model'], strict=False)
+        res = transition_model.load_state_dict(checkpoint['transition_model'], strict=False)
+        print(f"Model {model_type} load:", res, file=sys.stderr)
         reward_model.load_state_dict(checkpoint['reward_model'])
 
         self.transition_model = transition_model
@@ -141,7 +148,7 @@ class ModelEnv(BaseEnv):
         # draw goal
         # goal color: green
         goal_color = (0, 255, 0)
-        goal_pos = curve_origin + self._goal * ppm
+        goal_pos = curve_origin + self._goal.detach().numpy() * ppm
         goal_pos[1] = h - goal_pos[1]
         pygame.draw.circle(self.screen, goal_color, goal_pos, 6)
 
@@ -161,13 +168,20 @@ class ModelEnv(BaseEnv):
 
 
 if __name__ == '__main__':
-    env = ModelEnv(path='/Users/riccardo/PycharmProjects/TUDelft/branches/Physics_Informed_Model_Based_RL/export/model/seed_487/emergency.ckpt', env_name='soft_reacher')
+    true_env = make_env('soft_reacher')
+    batch_size = 1
+    weights_path = "/Users/riccardo/PycharmProjects/TUDelft/branches/Physics_Informed_Model_Based_RL/FINAL/model_mlp/seed_4/only_model.ckpt"
+    env = ModelEnv(path=weights_path, env=true_env, model_type='mlp', batch_size=batch_size)
+    del true_env
     env.render()
     env.reset()
     done = False
     with torch.no_grad():
         while not done:
             action = torch.rand(env.action_size) * 2 - 1
-            _, _, done = env.step(action.unsqueeze(0))
-            env.render()
+            for _ in range(100):
+                _, _, done = env.step(action.unsqueeze(0))
+                env.render()
+            if done:
+                break
     pygame.quit()
