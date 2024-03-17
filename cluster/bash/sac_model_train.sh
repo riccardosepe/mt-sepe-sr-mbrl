@@ -14,7 +14,7 @@ if ! [[ $1 =~ ^[0-9]+$ ]]; then
     echo "Usage: bash $0 <seed> <model-type>"
     exit 1
 else
-    seed=$2
+    seed=$1
 fi
 
 # second argument must be either "mlp" or "lnn"
