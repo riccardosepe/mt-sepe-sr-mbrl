@@ -1,10 +1,13 @@
+import json
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+
 from env.rewards import tolerance
 
 import dill as pickle
 pickle.settings['recurse'] = True
-
 
 def tolerances():
     xmax = 1.5e-1
@@ -70,10 +73,17 @@ def pos_reward():
             else:
                 distances[j, i] = tolerance(dist, margin=margin)
 
+    # Define the colors for the colormap
+    colors = [(1, 1, 1), (247/255, 164/255, 52/255)]  # Red to White
+
+    # Create the colormap
+    cmap_name = 'red_white'
+    cm = LinearSegmentedColormap.from_list(cmap_name, colors)
+
     # Create the plot
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
-    cax = ax.imshow(distances, cmap='cividis', origin='lower', extent=[xmin, xmax, ymin, ymax])
-    fig.colorbar(cax, ax=ax, label='Distance from goal', fraction=0.03)
+    fig, ax = plt.subplots()
+    cax = ax.imshow(distances, cmap=cm, origin='lower', extent=[xmin, xmax, ymin, ymax])
+    fig.colorbar(cax, ax=ax, label='Reward', fraction=0.03)
 
     # Add Cartesian axes
     ax.axhline(0, color='black', linewidth=0.5)
@@ -97,7 +107,7 @@ def pos_reward():
         yes.append(xy[1])
 
     ax.plot(xes, yes, color=robot_color, linewidth=3, label='Robot in motion', alpha=0.5)
-    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5, alpha=0.5)
+    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5, alpha=0.7)
 
     ax.scatter(goal[0], goal[1], marker='o', color='limegreen', s=50, label='Goal', edgecolor='k', zorder=2)
 
@@ -113,14 +123,20 @@ def pos_reward():
     ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5, alpha=0.5)
 
     # Draw base
-    ax.axhspan(ymin, 0, facecolor='grey')
+    ax.axhspan(ymin, 0, color='grey', alpha=0.3, hatch='//')
 
-    ax.legend()
+    ax.legend(loc='upper left')
 
-    ax.set_title(f'Position reward with goal in {*goal,} and margin={np.round(margin, decimals=3)}', pad=20)
+    # ax.set_title(f'Position reward with goal in ${*goal,}$ and margin=${np.round(margin, decimals=3)}$', pad=20)
 
-    plt.show()
+    ax.set_xlabel('[m]')
+    ax.set_ylabel('[m]')
 
+    # plt.show()
+    plt.savefig('plots/pos_reward.png', bbox_inches='tight')
 
 if __name__ == '__main__':
+    with open("utils/rcparams.json", "r") as inf:
+        params = json.load(inf)
+    plt.rcParams.update(params)
     pos_reward()
