@@ -11,7 +11,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
-#SBATCH --exclusive
 
 # Load python
 module load 2022r2
