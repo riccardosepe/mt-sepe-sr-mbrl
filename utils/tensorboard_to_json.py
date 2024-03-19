@@ -35,7 +35,6 @@ def process_run(run_folder):
     return run_data
 
 
-
 def main(input_folder, output_folder):
     all_data = {}  # Dictionary to hold data from all runs
 
