@@ -239,27 +239,108 @@ class LNN(torch.nn.Module):
             raise NotImplementedError
 
     def compute_L(self, q):
-        features = self.mass_network(q)
-        diag = self.mass_heads['diag'](features)
-        off_diag = self.mass_heads['off_diag'](features)
+        y_L = self.mass_network(q)
+        device = y_L.device
         shift = 0.005
         eps = 0.01
-        diag = F.softplus(diag + shift) + eps
-        L = torch.diag_embed(diag)
-        indices = torch.tril_indices(self.n, self.n, -1)
-        L[:, indices[0], indices[1]] = off_diag
+        #
+        # l_diag_epsed_shifted = F.softplus(l_diag + shift) + eps
+
+        if self.n == 1:
+            L = y_L.unsqueeze(1)
+
+        elif self.n == 2:
+            L11 = y_L[:, 0].unsqueeze(1)
+            L1_zeros = torch.zeros(
+                L11.size(0), 1, dtype=torch.float64, device=device)
+
+            L21 = y_L[:, 1].unsqueeze(1)
+            L22 = y_L[:, 2].unsqueeze(1)
+
+            L1 = torch.cat((L11, L1_zeros), 1)
+            L2 = torch.cat((L21, L22), 1)
+            L = torch.cat((L1.unsqueeze(1), L2.unsqueeze(1)), 1)
+
+        elif self.n == 3:
+            L11 = y_L[:, 0].unsqueeze(1)
+            L1_zeros = torch.zeros(
+                L11.size(0), 2, dtype=torch.float64, device=device)
+
+            L21 = y_L[:, 1].unsqueeze(1)
+            L22 = y_L[:, 2].unsqueeze(1)
+            L2_zeros = torch.zeros(
+                L21.size(0), 1, dtype=torch.float64, device=device)
+
+            L31 = y_L[:, 3].unsqueeze(1)
+            L32 = y_L[:, 4].unsqueeze(1)
+            L33 = y_L[:, 5].unsqueeze(1)
+
+            L1 = torch.cat((L11, L1_zeros), 1)
+            L2 = torch.cat((L21, L22, L2_zeros), 1)
+            L3 = torch.cat((L31, L32, L33), 1)
+            L = torch.cat(
+                (L1.unsqueeze(1), L2.unsqueeze(1), L3.unsqueeze(1)), 1)
+
+        elif self.n == 4:
+            L11 = y_L[:, 0].unsqueeze(1)
+            L1_zeros = torch.zeros(
+                L11.size(0), 3, dtype=torch.float64, device=device)
+
+            L21 = y_L[:, 1].unsqueeze(1)
+            L22 = y_L[:, 2].unsqueeze(1)
+            L2_zeros = torch.zeros(
+                L21.size(0), 2, dtype=torch.float64, device=device)
+
+            L31 = y_L[:, 3].unsqueeze(1)
+            L32 = y_L[:, 4].unsqueeze(1)
+            L33 = y_L[:, 5].unsqueeze(1)
+            L3_zeros = torch.zeros(
+                L31.size(0), 1, dtype=torch.float64, device=device)
+
+            L41 = y_L[:, 6].unsqueeze(1)
+            L42 = y_L[:, 7].unsqueeze(1)
+            L43 = y_L[:, 8].unsqueeze(1)
+            L44 = y_L[:, 9].unsqueeze(1)
+
+            L1 = torch.cat((L11, L1_zeros), 1)
+            L2 = torch.cat((L21, L22, L2_zeros), 1)
+            L3 = torch.cat((L31, L32, L33, L3_zeros), 1)
+            L4 = torch.cat((L41, L42, L43, L44), 1)
+            L = torch.cat((L1.unsqueeze(1), L2.unsqueeze(
+                1), L3.unsqueeze(1), L4.unsqueeze(1)), 1)
+
+        else:
+            raise NotImplementedError
+
+        L[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(L, dim1=1, dim2=2).clone() + shift) + eps
 
         return L
 
     def compute_D(self, q):
-        features = self.damping_network(q)
-        diag = self.damp_heads['diag'](features)
-        off_diag = self.damp_heads['off_diag'](features)
+        y_D = self.damping_network(q)
+        device = y_D.device
+        D11 = y_D[:, 0].unsqueeze(1)
+        D1_zeros = torch.zeros(
+            D11.size(0), 2, dtype=torch.float64, device=device)
 
-        diag = F.softplus(diag)
-        D = torch.diag_embed(diag)
-        indices = torch.tril_indices(self.n, self.n, -1)
-        D[:, indices[0], indices[1]] = off_diag
+        D21 = y_D[:, 1].unsqueeze(1)
+        D22 = y_D[:, 2].unsqueeze(1)
+        D2_zeros = torch.zeros(
+            D21.size(0), 1, dtype=torch.float64, device=device)
+
+        D31 = y_D[:, 3].unsqueeze(1)
+        D32 = y_D[:, 4].unsqueeze(1)
+        D33 = y_D[:, 5].unsqueeze(1)
+
+        D1 = torch.cat((D11, D1_zeros), 1)
+        D2 = torch.cat((D21, D22, D2_zeros), 1)
+        D3 = torch.cat((D31, D32, D33), 1)
+        D = torch.cat(
+            (D1.unsqueeze(1), D2.unsqueeze(1), D3.unsqueeze(1)), 1)
+
+        # l_diag_epsed = F.softplus(l_diag)
+
+        D[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(D, dim1=1, dim2=2).clone())
 
         return D
 
