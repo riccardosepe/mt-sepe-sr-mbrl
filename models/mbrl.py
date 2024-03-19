@@ -312,7 +312,7 @@ class LNN(torch.nn.Module):
         else:
             raise NotImplementedError
 
-        L[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(L, dim1=1, dim2=2).clone() + shift) + eps
+        L[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(L, dim1=1, dim2=2) + shift) + eps
 
         return L
 
@@ -340,7 +340,7 @@ class LNN(torch.nn.Module):
 
         # l_diag_epsed = F.softplus(l_diag)
 
-        D[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(D, dim1=1, dim2=2).clone())
+        D[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(D, dim1=1, dim2=2))
 
         return D
 
