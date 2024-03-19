@@ -14,7 +14,6 @@ class ReplayBuffer:
     """
     Experience replay buffer
     """
-
     def __init__(self, capacity, device):
         self.buffer = deque(maxlen=capacity)
         self.device = device
@@ -41,7 +40,6 @@ class ValueCritic(torch.nn.Module):
     """
     Critic MLP network of state-value function
     """
-
     def __init__(self, obs_size):
         super(ValueCritic, self).__init__()
         self.fc1 = torch.nn.Linear(obs_size, 256)
@@ -59,7 +57,6 @@ class Actor(torch.nn.Module):
     """
     Actor MLP network
     """
-
     def __init__(self, obs_size, action_size):
         super(Actor, self).__init__()
         self.fc1 = torch.nn.Linear(obs_size, 256)
@@ -86,7 +83,7 @@ class Actor(torch.nn.Module):
             if with_logprob:
                 log_prob = dist.log_prob(x_t).sum(1)
                 log_prob -= torch.log(torch.clamp(1 -
-                                                  action.pow(2), min=1e-6)).sum(1)
+                                      action.pow(2), min=1e-6)).sum(1)
             else:
                 log_prob = None
 
@@ -97,7 +94,7 @@ class MLP(torch.nn.Module):
     def __init__(self, obs_size, action_size, hidden_dim=64):
         super(MLP, self).__init__()
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(obs_size + action_size, hidden_dim),
+            torch.nn.Linear(obs_size+action_size, hidden_dim),
             torch.nn.ReLU(),
             torch.nn.Linear(hidden_dim, hidden_dim),
             torch.nn.ReLU(),
@@ -112,7 +109,6 @@ class LNN(torch.nn.Module):
     """
     Lagrangian Neural Network
     """
-
     def __init__(self, env_name, n, obs_size, action_size, dt, dt_small, a_zeros):
         super(LNN, self).__init__()
         self.env_name = env_name
@@ -124,9 +120,7 @@ class LNN(torch.nn.Module):
         d_hidden_dim = 5
 
         input_size = obs_size - self.n
-        out_L = int(self.n * (self.n + 1) / 2)
-        n1 = out_L - self.n
-        n2 = out_L - n1
+        out_L = int(self.n*(self.n+1)/2)
 
         self.mass_network = torch.nn.Sequential(
             torch.nn.Linear(input_size, lagr_hidden_dim),
@@ -135,9 +129,8 @@ class LNN(torch.nn.Module):
             torch.nn.Softplus(),
             torch.nn.Linear(lagr_hidden_dim, lagr_hidden_dim),
             torch.nn.Softplus(),
+            torch.nn.Linear(lagr_hidden_dim, out_L)
         )
-        self.mass_heads = torch.nn.ModuleDict({'diag': torch.nn.Linear(lagr_hidden_dim, n1),
-                                               'off_diag': torch.nn.Linear(lagr_hidden_dim, n2)})
 
         if not self.env_name == "reacher":
             self.potential_network = torch.nn.Sequential(
@@ -162,9 +155,8 @@ class LNN(torch.nn.Module):
                 torch.nn.Tanh(),
                 torch.nn.Linear(d_hidden_dim, d_hidden_dim),
                 torch.nn.Tanh(),
+                torch.nn.Linear(d_hidden_dim, out_L)
             )
-            self.damp_heads = torch.nn.ModuleDict({'diag': torch.nn.Linear(d_hidden_dim, n1),
-                                                   'off_diag': torch.nn.Linear(d_hidden_dim, n2)})
 
         self.a_zeros = a_zeros
 
@@ -174,7 +166,7 @@ class LNN(torch.nn.Module):
         # step_method = to.Euler(term=term)
         # step_method = to.Dopri5(term=term)
         # step_size_controller = to.FixedStepController()
-        step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt_small ** 2, term=term)
+        step_size_controller = to.IntegralController(atol=1e-7, rtol=1e-3, dt_min=self.dt_small**2, term=term)
         solver = to.AutoDiffAdjoint(step_method, step_size_controller, backprop_through_step_size_control=True)
         self.solver = torch.compile(solver)
 
@@ -221,29 +213,24 @@ class LNN(torch.nn.Module):
             return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), x[:, 2:]), 1)
 
         elif self.env_name == "reacher" or self.env_name == "acrobot":
-            return torch.cat(
-                (torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), x[:, 4:]), 1)
+            return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), x[:, 4:]), 1)
 
         elif self.env_name == "cartpole":
             return torch.cat((x[:, 0].unsqueeze(1), torch.atan2(x[:, 2], x[:, 1]).unsqueeze(1), x[:, 3:]), 1)
 
         elif self.env_name == "cart2pole":
-            return torch.cat((x[:, 0].unsqueeze(1), torch.atan2(x[:, 2], x[:, 1]).unsqueeze(1),
-                              torch.atan2(x[:, 4], x[:, 3]).unsqueeze(1), x[:, 5:]), 1)
+            return torch.cat((x[:, 0].unsqueeze(1), torch.atan2(x[:, 2], x[:, 1]).unsqueeze(1), torch.atan2(x[:, 4], x[:, 3]).unsqueeze(1), x[:, 5:]), 1)
 
         elif self.env_name == "cart3pole":
-            return torch.cat((x[:, 0].unsqueeze(1), torch.atan2(x[:, 2], x[:, 1]).unsqueeze(1),
-                              torch.atan2(x[:, 4], x[:, 3]).unsqueeze(1),
+            return torch.cat((x[:, 0].unsqueeze(1), torch.atan2(x[:, 2], x[:, 1]).unsqueeze(1), torch.atan2(x[:, 4], x[:, 3]).unsqueeze(1),
                               torch.atan2(x[:, 6], x[:, 5]).unsqueeze(1), x[:, 7:]), 1)
 
         elif self.env_name == "acro3bot":
-            return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1),
-                              torch.atan2(x[:, 5], x[:, 4]).unsqueeze(1),
+            return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), torch.atan2(x[:, 5], x[:, 4]).unsqueeze(1),
                               x[:, 6:]), 1)
 
         elif self.env_name == "jax_pendulum":
-            return torch.cat(
-                (torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), x[:, 4:]), 1)
+            return torch.cat((torch.atan2(x[:, 1], x[:, 0]).unsqueeze(1), torch.atan2(x[:, 3], x[:, 2]).unsqueeze(1), x[:, 4:]), 1)
 
         elif self.env_name == "soft_reacher":
             return x
@@ -331,7 +318,7 @@ class LNN(torch.nn.Module):
 
         else:
             qddot = torch.matmul(
-                Minv, (self.get_A(a) - c - dV_dq).unsqueeze(2)).squeeze(2)
+                Minv, (self.get_A(a)-c-dV_dq).unsqueeze(2)).squeeze(2)
 
         return qddot
 
@@ -341,10 +328,10 @@ class LNN(torch.nn.Module):
         return torch.cat((qdot, qddot), dim=1)
 
     def rk2(self, s, a, dt):
-        alpha = 2.0 / 3.0  # Ralston's method
+        alpha = 2.0/3.0  # Ralston's method
         k1 = self.derivs(0, s, a)
         k2 = self.derivs(0, s + alpha * dt * k1, a)
-        s_1 = s + dt * ((1.0 - 1.0 / (2.0 * alpha)) * k1 + (1.0 / (2.0 * alpha)) * k2)
+        s_1 = s + dt * ((1.0 - 1.0/(2.0*alpha))*k1 + (1.0/(2.0*alpha))*k2)
         return s_1
 
     def rk4(self, s, a, dt):
@@ -362,8 +349,8 @@ class LNN(torch.nn.Module):
             device = o.device
             s = self.inverse_trig_transform_model(o)
             t_start = torch.zeros((o.shape[0],)).to(device)
-            t_end = self.dt_large * torch.ones((o.shape[0],)).to(device)
-            dt0 = self.dt_small * torch.ones((o.shape[0],)).to(device)
+            t_end = self.dt_large*torch.ones((o.shape[0],)).to(device)
+            dt0 = self.dt_small*torch.ones((o.shape[0],)).to(device)
 
             sol = self.solver.solve(to.InitialValueProblem(y0=s, t_start=t_start, t_end=t_end), dt0=dt0, args=a)
             s_1 = sol.ys[:, -1, :].squeeze(1)
@@ -377,7 +364,6 @@ class RewardMLP(torch.nn.Module):
     """
     Reward model
     """
-
     def __init__(self, obs_size):
         super(RewardMLP, self).__init__()
         self.fc1 = torch.nn.Linear(obs_size, 64)
