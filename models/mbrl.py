@@ -241,8 +241,8 @@ class LNN(torch.nn.Module):
     def compute_L(self, q):
         y_L = self.mass_network(q)
         device = y_L.device
-        shift = 0.005
-        eps = 0.01
+        # shift = 0.005
+        # eps = 0.01
         #
         # l_diag_epsed_shifted = F.softplus(l_diag + shift) + eps
 
@@ -311,8 +311,6 @@ class LNN(torch.nn.Module):
 
         else:
             raise NotImplementedError
-
-        L[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(L, dim1=1, dim2=2) + shift) + eps
 
         return L
 
