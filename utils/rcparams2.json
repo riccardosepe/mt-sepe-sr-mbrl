@@ -1,0 +1,15 @@
+{
+    "font.size": 24,
+    "text.usetex": true,
+    "axes.labelsize": 28,
+    "axes.titlesize": 28,
+    "xtick.labelsize": 24,
+    "ytick.labelsize": 24,
+    "legend.fontsize": 24,
+    "figure.figsize": [9.0, 6.0],
+    "figure.dpi": 200, 
+    "savefig.dpi": 400,
+    "savefig.format": "png",
+    "mathtext.fontset": "stix",
+    "font.family": "STIXGeneral"
+}
