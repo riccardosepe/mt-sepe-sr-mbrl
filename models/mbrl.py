@@ -340,8 +340,6 @@ class LNN(torch.nn.Module):
 
         # l_diag_epsed = F.softplus(l_diag)
 
-        D[:, torch.arange(self.n), torch.arange(self.n)] = F.softplus(torch.diagonal(D, dim1=1, dim2=2))
-
         return D
 
     def get_A(self, a):
