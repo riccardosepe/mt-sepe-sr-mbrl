@@ -40,7 +40,7 @@ fi
 
 # The following variables are used by the sbatch scripts
 # The name of the job
-export SBATCH_JOB_NAME="sac_model_soft_reacher_$seed"
+export SBATCH_JOB_NAME="sac_lnn_soft_reacher_$seed"
 
 # The maximum time the job can run for
 export SBATCH_TIMELIMIT="100:00:00"
