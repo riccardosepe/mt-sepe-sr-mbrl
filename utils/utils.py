@@ -139,7 +139,6 @@ def format_label(x):
     if x == 0:
         return "0"
     else:
-        e = np.log10(x)
-        e = int(e + 0.5*np.sign(e))
-        n = np.round(x / 10 ** e, decimals = 1)
+        e = int(np.floor(np.log10(np.abs(x))))
+        n = np.round(x / 10 ** e, decimals=1)
         return f"${n}$e${e}$"
