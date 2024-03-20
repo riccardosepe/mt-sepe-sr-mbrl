@@ -8,6 +8,30 @@ from argparse import ArgumentParser
 import json
 
 
+def prepare_folders(in_folder):
+    if not has_subfolders(in_folder):
+        raise UserWarning(f"No subfolders found in {in_folder}")
+
+    base_path = os.path.join(in_folder, "tb")
+    os.mkdir(base_path)
+
+    for folder in os.listdir(in_folder):
+        if folder == "tb":
+            continue
+        folder_path = os.path.join(in_folder, folder)
+        if not os.path.isdir(folder_path):
+            continue
+
+        new_path = os.path.join(base_path, folder)
+        tb_path = os.path.join(folder_path, "tensorboard")
+        os.system(f"mv {tb_path} {base_path}")
+
+        tmp_path = os.path.join(base_path, "tensorboard")
+        os.system(f"mv {tmp_path} {new_path}")
+
+    return base_path
+
+
 def has_subfolders(folder):
     return any(os.path.isdir(os.path.join(folder, f)) for f in os.listdir(folder))
 
@@ -78,6 +102,11 @@ if __name__ == '__main__':
                             help='The path to the output folder',
                             default='.')  # default to the current folder
 
+    arg_parser.add_argument("--prepare",
+                            action="store_true",
+                            default=False,
+                            help="Prepare the output folder by creating it if it doesn't exist")
+
     args = arg_parser.parse_args()
     in_folder, out_folder = args.input, args.output
 
@@ -88,6 +117,9 @@ if __name__ == '__main__':
     if not os.path.exists(out_folder):
         print("Creating output folder...")
         os.makedirs(out_folder, exist_ok=True)
+
+    if args.prepare:
+        in_folder = prepare_folders(in_folder)
 
     try:
         outfile = main(in_folder, out_folder)
