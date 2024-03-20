@@ -8,14 +8,18 @@ with open(f"{os.path.dirname(__file__)}/../utils/rcparams2.json", "r") as f:
     plt.rcParams.update(json.load(f))
 
 # PLT_LABELS = ['bend', 'shear', 'axial', 'bend_vel', 'shear_vel', 'axial_vel']
-PLT_LABELS = ['$\\theta_{bend}$',
-              '$\\sigma_{shear}$',
-              '$\\sigma_{axial}$',
-              '$\\dot{\\theta}_{bend}$',
-              '$\\dot{\\sigma}_{shear}$',
-              '$\\dot{\\sigma}_{axial}$']
+STATE_LABELS = ['$\\theta_{bend}$',
+                '$\\sigma_{shear}$',
+                '$\\sigma_{axial}$',
+                '$\\dot{\\theta}_{bend}$',
+                '$\\dot{\\sigma}_{shear}$',
+                '$\\dot{\\sigma}_{axial}$']
 
-states_limits = [(-np.pi/2, np.pi/2), (-0.1, 0.1), (-0.2, 0.2), (-17.5, 17.5), (-7.5, 7.5), (-7.5, 7.5)]
+ACT_LABELS = ['$u_{bend}$',
+              '$u_{shear}$',
+              '$u_{axial}$']
+
+states_limits = [(-np.pi / 2, np.pi / 2), (-0.1, 0.1), (-0.2, 0.2), (-17.5, 17.5), (-7.5, 7.5), (-7.5, 7.5)]
 
 
 def states_histograms(buffer, save=False):
@@ -25,7 +29,7 @@ def states_histograms(buffer, save=False):
     fig, axs = plt.subplots(3, 2, figsize=(15, 10))
     for i in range(6):
         axs[i % 3, i // 3].hist(states[:, i], bins=20)
-        axs[i % 3, i // 3].set_title(PLT_LABELS[i])
+        axs[i % 3, i // 3].set_title(STATE_LABELS[i])
         axs[i % 3, i // 3].set_xlim(*states_limits[i])
 
     if save:
@@ -61,7 +65,7 @@ def joint_positions_velocities_histograms(buffer, save=False):
         axs[i].set_xlabel('q', fontsize=14)
         axs[i].set_ylabel('qdot', fontsize=14)
 
-        axs[i].set_title(PLT_LABELS[i], fontsize=16)
+        axs[i].set_title(STATE_LABELS[i], fontsize=16)
         axs[i].set_aspect(abs(xedges[-1] - xedges[0]) / abs(yedges[-1] - yedges[0]))
         axs[i].tick_params(axis='both', which='major', labelsize=12)
 
@@ -82,7 +86,7 @@ def actions_histograms(buffer, save=False):
     fig, axs = plt.subplots(act_dim, 1, figsize=(8, 10))
     for i in range(act_dim):
         axs[i].hist(actions[:, i], bins=20)
-        axs[i].set_title(PLT_LABELS[i])
+        axs[i].set_title(ACT_LABELS[i])
 
     if save:
         path = f"{os.path.dirname(__file__)}/../plots/actions_histograms.png"
