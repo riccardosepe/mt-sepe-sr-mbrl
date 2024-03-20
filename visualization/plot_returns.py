@@ -5,14 +5,7 @@ import argparse
 
 import numpy as np
 
-
-def format_label(x):
-    if x == 0:
-        return "0"
-    else:
-        e = int(np.log10(x))
-        n = int(x / 10 ** e)
-        return f"${n}$e${e}$"
+from utils.utils import format_label
 
 
 def plot_returns(input_file, save=True):
