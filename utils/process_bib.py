@@ -55,6 +55,7 @@ def main(input_file, output_file):
     with open(output_file, 'w', encoding='utf-8') as bibfile:
         bibfile.write(bibtexparser.dumps(bib_database))
 
+
 if __name__ == "__main__":
     input_file = '/Users/riccardo/Desktop/Cite.bib'
     output_file = 'Cite.bib'
