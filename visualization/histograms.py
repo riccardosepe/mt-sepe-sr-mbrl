@@ -79,7 +79,9 @@ def joint_positions_velocities_histograms(buffer, save=False):
 
 
 def actions_histograms(buffer, save=False):
+    a_scale = np.array([0.002,   0.05,    0.1])
     actions = np.array([np.array(sample[1]) for sample in buffer.buffer])
+    actions *= a_scale
     # if actions.shape[1] != 3:
     #     raise ValueError(f"Actions have shape {actions.shape} instead of (N, 3)")
     act_dim = actions.shape[1]
@@ -87,6 +89,9 @@ def actions_histograms(buffer, save=False):
     for i in range(act_dim):
         axs[i].hist(actions[:, i], bins=20)
         axs[i].set_title(ACT_LABELS[i])
+        if i == 1:
+            axs[i].set_xticks([-0.05, -0.025, 0, 0.025, 0.05])
+        #     axs[i].set_xticklabels(["-0.05", "-0.025", "0.000", "0.025", "0.05"])
 
     if save:
         path = f"{os.path.dirname(__file__)}/../plots/actions_histograms.png"
