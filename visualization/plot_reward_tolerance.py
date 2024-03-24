@@ -9,41 +9,62 @@ from env.rewards import tolerance
 import dill as pickle
 pickle.settings['recurse'] = True
 
+
 def tolerances():
     xmax = 1.5e-1
-    x = np.linspace(0, xmax, 100)
-    y = np.linspace(0, 2e-1, 100)
+    # x = np.linspace(-xmax, xmax, 200)
+    # y = np.linspace(0, 2e-1, 100)
+    #
+    # X, Y = np.meshgrid(x, y)
+    # Z = np.zeros(X.shape)
+    #
+    # for i in range(X.shape[0]):
+    #     for j in range(X.shape[1]):
+    #         Z[i, j] = tolerance(X[i, j], margin=Y[i, j])
 
-    X, Y = np.meshgrid(x, y)
-    Z = np.zeros(X.shape)
-
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            Z[i, j] = tolerance(X[i, j], margin=Y[i, j])
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(X, Y, Z, alpha=0.7)
-
-    # Add a line at x = 1e-1
-    x_line = 1e-1
-    y_line = np.linspace(0, 2e-1, 100)
-    z_line = np.array([tolerance(x_line, margin=yi) for yi in y_line])
-    ax.plot([x_line] * len(y_line), y_line, z_line, color='r', linewidth=4)
-
-    ax.set_xlabel('x')
-    ax.set_ylabel('margin')
-    ax.set_zlabel('tolerance')
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X, Y, Z, alpha=0.7)
+    #
+    # # Add a line at x = 1e-1
+    # x_line = 1e-1
+    # y_line = np.linspace(0, 2e-1, 100)
+    # z_line = np.array([tolerance(x_line, margin=yi) for yi in y_line])
+    # ax.plot([x_line] * len(y_line), y_line, z_line, color='r', linewidth=4)
+    #
+    # ax.set_xlabel('x')
+    # ax.set_ylabel('margin')
+    # ax.set_zlabel('tolerance')
 
     fig2, ax2 = plt.subplots()
+    # Add axes
+    ax2.axhline(0, color='black', linewidth=0.8)
+    ax2.axvline(0, color='black', linewidth=0.8)
     # Add a line at y = 1e-2
-    y_line = 1e-1
-    x_line = np.linspace(0, xmax, 100)
+    y_line = 5e-2
+    x_line = np.linspace(-xmax, xmax, 200)
     z_line = np.array([tolerance(xi, margin=y_line) for xi in x_line])
-    ax2.plot(x_line, z_line)
+    ax2.plot(x_line, z_line, linewidth=2)
 
+    ax2.set_xlabel('$x$')
+    ax2.set_ylabel('$\\bar{t}(x,'+str(y_line)+')$')
+    ax2.grid(True)
+
+    ax2.axhline(0.1, color='black', linewidth=0.8, linestyle='--', xmin=0, xmax=y_line+0.6)
+    ax2.axvline(y_line, color='black', linewidth=0.8, linestyle='--', ymin=0, ymax=0.09+0.05)
+    ax2.axvline(-y_line, color='black', linewidth=0.8, linestyle='--', ymin=0, ymax=0.09+0.05)
+
+    ax2.scatter(-y_line, 0.1, marker='o', color='red', s=50, zorder=2)
+    ax2.scatter(y_line, 0.1, marker='o', color='red', s=50, zorder=2)
+
+    yticks_pos = np.linspace(0, 1, 6).tolist()
+    yticks_pos.append(0.1)
+    yticks_pos = np.array(list(sorted(yticks_pos)))
+    yticks = [f'{y:.2f}' for y in yticks_pos]
+    ax2.set_yticks(yticks_pos, yticks)
     # ax2.set_xticks(np.linspace(0, 1.5e-1, 10))
-    plt.show()
+    # plt.show()
+    plt.savefig('plots/tolerances.png', bbox_inches='tight')
 
 
 def pos_reward():
@@ -135,8 +156,10 @@ def pos_reward():
     # plt.show()
     plt.savefig('plots/pos_reward.png', bbox_inches='tight')
 
+
 if __name__ == '__main__':
     with open("utils/rcparams.json", "r") as inf:
         params = json.load(inf)
     plt.rcParams.update(params)
-    pos_reward()
+    # pos_reward()
+    tolerances()

@@ -89,7 +89,7 @@ def plot2(model, input_file, lrs=None, save=True):
         plt.show()
 
 
-def plot(model, input_file, lrs=None, save=False):
+def plot(model, input_file, lrs=None, save=True):
     if lrs is None:
         lrs = ["3e-04"]
     with open(input_file) as f:
@@ -101,20 +101,18 @@ def plot(model, input_file, lrs=None, save=False):
         lr = run.split("_")[-1]
         if lr not in lrs:
             continue
-        values = run_data["transition_loss"]["values"]
-        steps = run_data["transition_loss"]["steps"]
+        values = run_data["reward_loss"]["values"]
+        steps = run_data["reward_loss"]["steps"]
         v[lr].append(values)
 
+    max_s = max(steps) + 1
     r = 0
     r_fill = r + 3
     min_overall = np.inf
     add_data = {lr: {'mean': None, 'color': None} for lr in lrs}
     colors = ['#ff7f0e', '#1f77b4', '#2ca02c']
     for i, (lr, values) in enumerate(v.items()):
-
         values = np.array(values)
-        if lr == '3e-05':
-            continue
         means = np.mean(values, axis=0)
         stds = np.std(values, axis=0)
         mins = np.min(values, axis=0)
@@ -141,8 +139,8 @@ def plot(model, input_file, lrs=None, save=False):
     inc = (ylim[1] - ylim[0]) * 0.1
     ylim = (ylim[0], ylim[1] + inc)
 
-    ylim = (1.3e-2, 0.8e-1)
-    # ax.set_ylim(ylim)
+    ylim = (1e-3, 1e-2)
+    ax.set_ylim(ylim)
 
     # for lr, values in v.items():
     #     means = add_data[lr]['mean']
@@ -151,8 +149,8 @@ def plot(model, input_file, lrs=None, save=False):
 
     # ax.set_xlim(xlim)
     # ax.set_ylim(ylim)
-    # ax.set_yscale('log')
-    ylabels_v = [0.01, 0.015, 0.02, 0.025, 0.03, 0.04]
+    ax.set_yscale('log')
+    ylabels_v = [0.001, 0.002, 0.003, 0.004, 0.006, 0.01]
     ylabels = [format_label(l) for l in ylabels_v]
 
     ax.set_yticks(ylabels_v, ylabels)
@@ -170,7 +168,7 @@ def plot(model, input_file, lrs=None, save=False):
         lr = "all"
 
     if save:
-        path = f"{os.path.dirname(__file__)}/../plots/{model}_{lr}_loss.png"
+        path = f"{os.path.dirname(__file__)}/../plots/{model}_reward_{lr}_loss.png"
         plt.savefig(path, bbox_inches='tight')
     else:
         plt.tight_layout()
