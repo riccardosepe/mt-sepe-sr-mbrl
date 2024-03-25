@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 from torch.nn import Module, L1Loss
+import matplotlib.colors as mcolors
 
 
 def seed_all(seed):
@@ -142,3 +143,29 @@ def format_label(x):
         e = int(np.floor(np.log10(np.abs(x))))
         n = np.round(x / 10 ** e, decimals=1)
         return f"${n}$e${e}$"
+
+
+def smooth(scalars, weight):  # Weight between 0 and 1
+    last = scalars[0]  # First value in the plot (first timestep)
+    smoothed = list()
+    for point in scalars:
+        smoothed_val = last * weight + (1 - weight) * point  # Calculate smoothed value
+        smoothed.append(smoothed_val)  # Save it
+        last = smoothed_val  # Anchor the last smoothed value
+
+    return np.array(smoothed)
+
+
+def adjust_color_brightness(color, factor=1.0):
+    """
+    Adjusts the brightness of the given color. The factor parameter specifies the adjustment factor.
+    Factor < 1 will darken the color, factor > 1 will lighten the color, and factor = 1 will make no change.
+    """
+    try:
+        c = mcolors.cnames[color] if color in mcolors.cnames else color
+        c = mcolors.to_rgb(c)
+        c = [min(max(x * (1-factor), 0), 1) for x in c]  # ensure the values stay within the valid range [0, 1]
+        return mcolors.to_hex(c)
+    except ValueError:
+        print("Invalid color")
+        return None
