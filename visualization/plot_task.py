@@ -49,7 +49,7 @@ def plot(save=False):
     # marker_every = list(marker_every)
     for i in range(2):
         ax[i].axhline(goal[i],
-                   color=adjust_color_brightness(colors[i], 0.3),
+                   color=adjust_color_brightness('green', 0),
                    linestyle='--',
                    label=b[i]+"_{goal}$",
                    linewidth=7,
@@ -59,10 +59,10 @@ def plot(save=False):
         ax[i].plot(ee_env[:, i],
                 label=b[i]+"^{ENV}$",
                 linewidth=3,
-                color=adjust_color_brightness(colors[i], -0.15),
+                color=adjust_color_brightness(colors[i], 0),
                 marker='o',
-                markevery=10+marker_every,
-                markersize=10,
+                markevery=5+marker_every,
+                markersize=12,
                 alpha=1
                 )
 
@@ -79,7 +79,7 @@ def plot(save=False):
 
         ax[i].plot(ee_mlp[:, i],
                 label=b[i]+"^{MLP}$",
-                color=adjust_color_brightness(colors[i], -0.15),
+                color=adjust_color_brightness(colors[i], 0.15),
                 linestyle='-',
                 linewidth=3,
                 alpha=1
@@ -87,12 +87,30 @@ def plot(save=False):
         ax[i].grid()
         ax[i].legend(ncol=4)
 
+    xticks = np.arange(0, num_steps, 100)
+    xticklabels = np.array(xticks * 0.01, dtype=int)
 
-    # fig.legend(loc='upper center', ncol=4)
+    yticks_0 = np.linspace(0, 0.08, 5)
+    yticklabels_0 = [format_label(y) for y in yticks_0]
+
+    yticks_1 = np.linspace(0, 0.1, 6)
+    yticklabels_1 = [format_label(y) for y in yticks_1]
+
+    ax[0].set_xticks(xticks, xticklabels)
+    ax[0].set_yticks(yticks_0, yticklabels_0)
+    ax[1].set_xticks(xticks, xticklabels)
+    ax[1].set_yticks(yticks_1, yticklabels_1)
+
+    ax[0].set_ylabel("$[m]$")
+    ax[1].set_ylabel("$[m]$")
+    ax[1].set_xlabel("$[s]$")
+
     fig.tight_layout()
-    # fig.subplots_adjust(top=0.82)
-
-    plt.show()
+    if save:
+        path = f"{os.path.dirname(__file__)}/../plots/rl_ees.png"
+        plt.savefig(path)
+    else:
+        plt.show()
 
 
 def plot2(save=False):
@@ -166,4 +184,4 @@ def plot2(save=False):
 
 
 if __name__ == "__main__":
-    plot(save=False)
+    plot(save=True)

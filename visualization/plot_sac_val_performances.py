@@ -20,7 +20,7 @@ def plot(save=False):
     with open(lnn_path) as f:
         data_lnn = json.load(f)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 6))
     returns = {"lnn": [], "mlp": []}
     steps = None
     for run, run_data in data_mlp.items():
@@ -57,7 +57,7 @@ def plot(save=False):
 
     fig.tight_layout()
     if save:
-        path = f"{os.path.dirname(__file__)}/../plots/sac_train_returns.png"
+        path = f"{os.path.dirname(__file__)}/../plots/sac_val_returns.png"
         plt.savefig(path, bbox_inches='tight')
     else:
         plt.show()
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     parser.add_argument("--input", type=str, help="Folder with tensorboard.json file")
     args = parser.parse_args()
 
-    plot(save=False)
+    plot(save=True)
