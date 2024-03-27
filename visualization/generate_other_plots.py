@@ -1,6 +1,12 @@
+import json
+import os
+
 import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
+
+with open(f"{os.path.dirname(__file__)}/../utils/rcparams2.json", "r") as f:
+    plt.rcParams.update(json.load(f))
 
 
 def main():
