@@ -1,10 +1,13 @@
+import time
+
 import numpy as np
+from tqdm import trange
 
 from env.soft_reacher.soft_reacher import SoftReacher as Env
 # from env.cartpole.cartpole import cartpole as Env
 
 
-def main():
+def main3():
     env = Env(mle=False)
 
     env.reset()
@@ -35,6 +38,20 @@ def main():
         print("Min abs velocity: ", np.min(velocities, axis=0))
         print("Mean abs velocity: ", np.mean(velocities, axis=0))
         print("Std abs velocity: ", np.std(velocities, axis=0))
+
+
+def main():
+    env = Env(mle=False)
+
+    env.reset()
+
+    t = time.time()
+
+    for _ in range(100000):
+        env.step(np.random.uniform(-1, 1, env.action_size))
+        # env.render()
+
+    print(time.time() - t)
 
 
 if __name__ == '__main__':

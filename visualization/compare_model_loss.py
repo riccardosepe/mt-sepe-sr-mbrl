@@ -2,41 +2,19 @@ import argparse
 import json
 import os
 
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from colour import Color
 
-from utils.utils import format_label
+from utils.utils import format_label, smooth, adjust_color_brightness
 
 with open(f"{os.path.dirname(__file__)}/../utils/rcparams2.json", "r") as f:
     plt.rcParams.update(json.load(f))
 
 
-def smooth(scalars, weight):  # Weight between 0 and 1
-    last = scalars[0]  # First value in the plot (first timestep)
-    smoothed = list()
-    for point in scalars:
-        smoothed_val = last * weight + (1 - weight) * point  # Calculate smoothed value
-        smoothed.append(smoothed_val)  # Save it
-        last = smoothed_val  # Anchor the last smoothed value
-
-    return np.array(smoothed)
-
-
-def darken_color(color, amount=0.5):
-    """
-    Darkens the given color. The amount parameter specifies the darkening factor and ranges from 0 (no change) to 1 (black).
-    """
-    try:
-        c = mcolors.cnames[color] if color in mcolors.cnames else color
-        c = mcolors.to_rgb(c)
-        c = [x * (1 - amount) for x in c]
-        return mcolors.to_hex(c)
-    except ValueError:
-        print("Invalid color")
-        return None
-
+labels = {
+    'lnn': "$\\mathcal{D}_s$",
+    'mlp': "$\\mathcal{D}$"
+    }
 
 def plot(infolder, lrs=None, save=False):
     data = {"lnn": None, "mlp": None}
@@ -73,14 +51,14 @@ def plot(infolder, lrs=None, save=False):
         min_overall = min(min_overall, np.min(mins))
         line_above = means + stds
         line_below = means - stds
-        p = ax.plot(steps[r:], means[r:], label=model)
+        p = ax.plot(steps[r:], means[r:], label=model.upper())
         color = p[0].get_color()
 
         ax.plot(steps[r:], line_below[r:], linewidth=0.5, color=color)
         ax.plot(steps[r_fill:], line_above[r_fill:], linewidth=0.5, color=color)
         ax.fill_between(steps[r_fill:], line_below[r_fill:], line_above[r_fill:], alpha=0.3, color=color)
 
-        ax.plot(steps[r:], smooth(values[best_run, r:], 0.8), linestyle='--', linewidth=3, color=darken_color(color, 0.3), label=f"best {model} run")
+        ax.plot(steps[r:], smooth(values[best_run, r:], 0.8), linestyle='--', linewidth=3, color=adjust_color_brightness(color, 0.3), label=f"best {model.upper()} run")
     # ax.axhline(min_overall, color='green', linestyle='--', label="min overall")
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
@@ -121,9 +99,10 @@ def plot(infolder, lrs=None, save=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--folder", type=str, help="Folder containing the JSON files", required=True)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--folder", type=str, help="Folder containing the JSON files", required=True)
+    #
+    # args = parser.parse_args()
+    folder = "../FINAL"
 
-    args = parser.parse_args()
-
-    plot(args.folder, save=True)
+    plot(folder, save=True)

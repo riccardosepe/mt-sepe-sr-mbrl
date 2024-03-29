@@ -6,7 +6,7 @@ import torch
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    base_path = "/Users/riccardo/PycharmProjects/TUDelft/branches/Physics_Informed_Model_Based_RL/FINAL/model_mlp"
+    base_path = "/Users/riccardo/PycharmProjects/TUDelft/branches/Physics_Informed_Model_Based_RL/FINAL/model"
 
     for i in trange(5):
         for lr in ["3e-03", "3e-04", "3e-05"]:

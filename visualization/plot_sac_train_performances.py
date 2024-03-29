@@ -78,6 +78,13 @@ def plot(save=False):
 
     fig.legend(loc='upper center', ncols=2)
 
+    xticks = np.arange(0, len(steps)+1, 100)
+    xtickslabels = [format_label(x * 1000) for x in xticks]
+    # ax[0].set_xticks(xticks, xtickslabels)
+    # ax[1].set_xticks(xticks, xtickslabels)
+    ax[0].set_xlabel("training episodes")
+    ax[1].set_xlabel("training episodes")
+
     fig.tight_layout()
     fig.subplots_adjust(top=0.85)
     if save:

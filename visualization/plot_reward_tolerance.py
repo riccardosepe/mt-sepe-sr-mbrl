@@ -7,6 +7,9 @@ from matplotlib.colors import LinearSegmentedColormap
 from env.rewards import tolerance
 
 import dill as pickle
+
+from utils.utils import adjust_color_brightness
+
 pickle.settings['recurse'] = True
 
 
@@ -127,8 +130,13 @@ def pos_reward():
         xes.append(xy[0])
         yes.append(xy[1])
 
-    ax.plot(xes, yes, color=robot_color, linewidth=3, label='Robot in motion', alpha=0.5)
-    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5, alpha=0.7)
+    ax.plot(xes,
+            yes,
+            color=adjust_color_brightness(robot_color, 0.3),
+            linewidth=3,
+            alpha=0.7,
+            label='Robot in motion')
+    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5)
 
     ax.scatter(goal[0], goal[1], marker='o', color='limegreen', s=50, label='Goal', edgecolor='k', zorder=2)
 
@@ -140,8 +148,12 @@ def pos_reward():
         xes.append(xy[0])
         yes.append(xy[1])
 
-    ax.plot(xes, yes, color=robot_color, linewidth=3, alpha=0.5)
-    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5, alpha=0.5)
+    ax.plot(xes,
+            yes,
+            color=adjust_color_brightness(robot_color, 0.3),
+            alpha=0.7,
+            linewidth=3,)
+    ax.plot(xes[-1], yes[-1], 'o', color='r', markersize=5)
 
     # Draw base
     ax.axhspan(ymin, 0, color='grey', alpha=0.3, hatch='//')
@@ -161,5 +173,5 @@ if __name__ == '__main__':
     with open("utils/rcparams.json", "r") as inf:
         params = json.load(inf)
     plt.rcParams.update(params)
-    # pos_reward()
-    tolerances()
+    pos_reward()
+    # tolerances()

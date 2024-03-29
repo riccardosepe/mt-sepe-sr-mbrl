@@ -53,7 +53,13 @@ def plot(save=False):
         ax.axhline(1000, color='green', linestyle='--', linewidth=3)
         ax.set_title("Validation returns")
 
+    xticks = np.arange(0, max(steps)+10, 100)
+    xtickslabels = [format_label(x * 1000) for x in xticks]
+    ax.set_xticks(xticks, xtickslabels)
+
     ax.legend()
+    ax.set_xlabel("timesteps")
+    ax.set_ylabel("returns")
 
     fig.tight_layout()
     if save:

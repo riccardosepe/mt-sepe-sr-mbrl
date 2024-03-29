@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 from copy import deepcopy
 
@@ -12,6 +13,8 @@ from models.sac import ReplayBuffer, ActionValueCritic, Actor
 from utils.utils import soft_update, seed_all
 
 torch.set_default_dtype(torch.float64)
+
+SAVE = 'lnn'
 
 
 class SAC:
@@ -238,8 +241,16 @@ class SAC:
     def eval(self, episodes, render=False):
         # Evaluate agent performance over several episodes
         ep_r_list = []
+        if SAVE:
+            observations = [[] for _ in range(episodes)]
+            actions = [[] for _ in range(episodes)]
+            rewards = [[] for _ in range(episodes)]
+            ees = [[] for _ in range(episodes)]
         for episode in range(episodes):
             o, _, _ = self.env.reset()
+            if SAVE:
+                observations[episode].append(o)
+                ees[episode].append(self.env.cartesian_from_obs()[-1])
             ep_r = 0
             while True:
                 with torch.no_grad():
@@ -251,6 +262,11 @@ class SAC:
                     self.env.render()
                 ep_r += r
                 o = o_1
+                if SAVE:
+                    observations[episode].append(o)
+                    actions[episode].append(a)
+                    rewards[episode].append(r)
+                    ees[episode].append(self.env.cartesian_from_obs()[-1])
                 if done:
                     ep_r_list.append(ep_r)
                     if render:
@@ -259,6 +275,15 @@ class SAC:
 
         if self.arglist.mode == "eval":
             print("Average return :", np.mean(ep_r_list))
+
+        if SAVE:
+            data = {"observations": observations,
+                    "actions": actions,
+                    "rewards": rewards,
+                    "ee": ees,
+                    "goal": self.env._goal,
+                    }
+            np.save(f"FINAL/eval/data_{SAVE}.npy", data)
 
         return ep_r_list
 
