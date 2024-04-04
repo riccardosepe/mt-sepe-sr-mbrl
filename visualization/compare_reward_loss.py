@@ -92,6 +92,7 @@ def plot(lrs=None, save=False):
 
     ax.set_xlabel("epochs")
     ax.set_ylabel("L1 loss")
+    ax.set_title("Reward learning")
 
     if save:
         path = f"{os.path.dirname(__file__)}/../plots/compare_reward_loss2.png"

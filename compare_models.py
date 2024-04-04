@@ -417,7 +417,7 @@ def plot_ees1(observations_gt,
     fig_p.subplots_adjust(top=0.9)
     fig_e.subplots_adjust(top=0.8)
 
-    # return {'p': axs_p.get_ylim(), 'e': axs_e.get_ylim()}
+    return {'p': axs_p.get_ylim(), 'e': axs_e.get_ylim()}
 
     if save:
         save_path = f"{os.path.dirname(__file__)}/plots"
@@ -589,8 +589,8 @@ def plot_ees(observations_gt,
 
         fig_p.tight_layout()
         fig_e.tight_layout()
-        fig_p.subplots_adjust(top=0.9)
-        fig_e.subplots_adjust(top=0.8)
+        fig_p.subplots_adjust(top=0.85)
+        fig_e.subplots_adjust(top=0.7)
 
         if save:
             save_path = f"{os.path.dirname(__file__)}/plots"
