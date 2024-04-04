@@ -276,7 +276,7 @@ def plot_state(observations_gt,
         plt.show()
 
 
-def plot_ees(observations_gt,
+def plot_ees1(observations_gt,
              observations_pred_l,
              epoch=0,
              save=False,
@@ -417,13 +417,191 @@ def plot_ees(observations_gt,
     fig_p.subplots_adjust(top=0.9)
     fig_e.subplots_adjust(top=0.8)
 
+    # return {'p': axs_p.get_ylim(), 'e': axs_e.get_ylim()}
+
     if save:
         save_path = f"{os.path.dirname(__file__)}/plots"
-        fig_p.savefig(os.path.join(save_path, f"ee.png"),  bbox_inches='tight')
-        fig_e.savefig(os.path.join(save_path, f"ee_error.png"),  bbox_inches='tight')
+        fig_p.savefig(os.path.join(save_path, f"ee.png"), bbox_inches='tight')
+        fig_e.savefig(os.path.join(save_path, f"ee_error.png"), bbox_inches='tight')
     else:
         plt.tight_layout()
         plt.show()
+
+
+def plot_ees(observations_gt,
+              observations_pred_l,
+              epoch=0,
+              save=False,
+              skip=False,
+              max_time=20,
+              dt=1e-2,
+              steps_per_second=100,
+              th0=0,
+              r=2e-2,
+              l=1e-1):
+
+    lims = plot_ees1(observations_gt,
+                     observations_pred_l,
+                     epoch,
+                     save,
+                     skip,
+                     max_time,
+                     dt,
+                     steps_per_second,
+                     th0,
+                     r,
+                     l
+                     )
+
+    with open("env/soft_reacher/chi.p", "rb") as inf:
+        chi = pickle.load(inf)
+
+    xticks_locations = np.arange(0, max_time + dt) * steps_per_second
+    xticks = np.arange(0, max_time + dt, dtype=int)
+
+    colors = [
+        '#1f77b4',
+        '#ff7f0e'
+    ]
+    line_styles = ['--', '-']
+    error_line_styles = ['-', '-']
+    markers = [None, None]
+    factors = [0, -0.3]
+    line_sizes = [3, 3]
+    alphas = [1, 0.65]
+
+    def _eps(x):
+        if np.abs(x) < 1e-2:
+            return 1e-2 * np.sign(x)
+        else:
+            return 0
+
+    num_samples = len(observations_gt)
+    indices = np.arange(0, num_samples, step=50, dtype=int)
+
+    ee_gt = []
+    ee_pred_l = {k: [] for k in observations_pred_l.keys()}
+
+    for i in range(num_samples):
+        q = observations_gt[i, :3]
+        eps = _eps(q[0])
+        ee_gt.append(chi([th0, r, eps, *q], l))
+
+        for k in observations_pred_l.keys():
+            q = observations_pred_l[k][i, :3]
+            eps = _eps(q[0])
+            ee_pred_l[k].append(chi([th0, r, eps, *q], l))
+
+    ee_gt = (np.array(ee_gt)[:, :2]).squeeze()
+    ee_pred_l = {k: (np.array(ee_pred_l[k])[:, :2]).squeeze() for k in observations_pred_l.keys()}
+
+    num_lines = len(ee_pred_l) + 1
+    for j in range(num_lines):
+        fig_p, axs_p = plt.subplots(figsize=(15, 10))
+        fig_e, axs_e = plt.subplots(figsize=(15, 5))
+        # labels = ['lnn_seed_4', 'mlp_seed_0']
+
+        axs_p.plot(ee_gt[:, 0],
+                   label="$x_{ee}$",
+                   linewidth=3,
+                   color=adjust_color_brightness(colors[0], 0.3),
+                   marker='^',
+                   markevery=50,
+                   markersize=10
+                   )
+        axs_p.plot(ee_gt[:, 1],
+                   label="$y_{ee}$",
+                   linewidth=3,
+                   color=adjust_color_brightness(colors[1], 0.3),
+                   marker='^',
+                   markevery=50,
+                   markersize=10
+                   )
+
+        for i, k in enumerate(reversed(observations_pred_l.keys())):
+            if i > j-1:
+                continue
+            axs_p.plot(ee_pred_l[k][:, 0],
+                       label="$\\tilde{x}_{ee}^{" + k.upper() + "}$",
+                       color=adjust_color_brightness(colors[0], factors[i]),
+                       linewidth=line_sizes[i],
+                       linestyle=line_styles[i],
+                       marker=markers[i],
+                       markevery=50,
+                       markersize=10,
+                       alpha=alphas[i]
+                       )
+            axs_p.plot(ee_pred_l[k][:, 1],
+                       label="$\\tilde{y}_{ee}^{" + k.upper() + "}$",
+                       color=adjust_color_brightness(colors[1], factors[i]),
+                       linewidth=line_sizes[i],
+                       linestyle=line_styles[i],
+                       marker=markers[i],
+                       markevery=50,
+                       markersize=10,
+                       alpha=alphas[i]
+                       )
+
+        axs_p.set_title("End effector position")
+        fig_p.legend(loc='upper left', ncol=6)
+        axs_p.set_xticks(xticks_locations, xticks)
+        axs_p.grid()
+
+        errors = {
+            k: np.abs(ee_gt - ee_pred_l[k])
+            for k in observations_pred_l.keys()
+        }
+
+        for i, k in enumerate(reversed(observations_pred_l.keys())):
+            if i > j-1:
+                continue
+            axs_e.plot(errors[k][:, 0],
+                       label="$\\Delta x_{ee}^{" + k.upper() + "}$",
+                       color=adjust_color_brightness(colors[0], factors[i]),
+                       linewidth=line_sizes[i],
+                       linestyle=error_line_styles[i],
+                       marker=markers[i],
+                       markevery=50,
+                       markersize=10
+                       )
+            axs_e.plot(errors[k][:, 1],
+                       label="$\\Delta y_{ee}^{" + k.upper() + "}$",
+                       color=adjust_color_brightness(colors[1], factors[i]),
+                       linewidth=line_sizes[i],
+                       linestyle=error_line_styles[i],
+                       marker=markers[i],
+                       markevery=50,
+                       markersize=10
+                       )
+
+        axs_e.set_title("End effector position error")
+        fig_e.legend(loc='upper left', ncol=4)
+        axs_e.set_xticks(xticks_locations, xticks)
+        axs_e.grid()
+
+        axs_p.set_xlabel("$[s]$")
+        axs_p.set_ylabel("$[m]$")
+        axs_e.set_xlabel("$[s]$")
+        axs_e.set_ylabel("$[m]$")
+
+        axs_p.set_ylim(lims['p'])
+        axs_e.set_ylim(lims['e'])
+
+        fig_p.tight_layout()
+        fig_e.tight_layout()
+        fig_p.subplots_adjust(top=0.9)
+        fig_e.subplots_adjust(top=0.8)
+
+        if save:
+            save_path = f"{os.path.dirname(__file__)}/plots"
+            print("p ", axs_p.get_ylim())
+            print("e ", axs_e.get_ylim())
+
+            fig_p.savefig(os.path.join(save_path, f"ee_{j}.png"), bbox_inches='tight')
+            fig_e.savefig(os.path.join(save_path, f"ee_error_{j}.png"), bbox_inches='tight')
+        else:
+            plt.tight_layout()
+            plt.show()
 
 
 @torch.no_grad()
@@ -494,7 +672,7 @@ def rollout_plots(env, models, epoch, render=False, save=False, save_path=None, 
 
             pbar.update(1)
             if render:
-                env.render()
+                env.render(other=observations_pred_l['lnn'][-1])
 
     # Compute metrics
     # metrics = {model: compute_metrics(np.array(observations_gt[1:]), np.array(observations_pred_l[model][1:]))
@@ -507,15 +685,15 @@ def rollout_plots(env, models, epoch, render=False, save=False, save_path=None, 
     actions = np.array(actions)
 
     # Plot the states
-    plot_state(observations_gt,
-               observations_pred_l,
-               actions,
-               epoch=epoch,
-               save=save,
-               skip=skip,
-               max_time=max_time,
-               dt=dt,
-               steps_per_second=steps_per_second)
+    # plot_state(observations_gt,
+    #            observations_pred_l,
+    #            actions,
+    #            epoch=epoch,
+    #            save=save,
+    #            skip=skip,
+    #            max_time=max_time,
+    #            dt=dt,
+    #            steps_per_second=steps_per_second)
 
     # Plot the end effector position
     plot_ees(observations_gt,
@@ -593,4 +771,13 @@ if __name__ == "__main__":
                 r = model.load_state_dict(checkpoint['transition_model'], strict=False)
                 print("Loading weights:", r, file=sys.stderr)
 
-    rollout_plots(env, models, 1, save=True)
+    rollout_plots(env, models, 1, save=True, render=False)
+
+
+# j i
+# 0 x
+# 1 0
+# 2 0
+# 2 1
+
+

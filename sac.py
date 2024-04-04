@@ -14,7 +14,7 @@ from utils.utils import soft_update, seed_all
 
 torch.set_default_dtype(torch.float64)
 
-SAVE = 'lnn'
+SAVE = False
 
 
 class SAC:
@@ -252,6 +252,7 @@ class SAC:
                 observations[episode].append(o)
                 ees[episode].append(self.env.cartesian_from_obs()[-1])
             ep_r = 0
+            i=0
             while True:
                 with torch.no_grad():
                     a, _ = self.actor(torch.tensor(
@@ -259,7 +260,7 @@ class SAC:
                 a = a.cpu().numpy()[0]
                 o_1, r, done = self.env.step(a, last=True)
                 if render:
-                    self.env.render()
+                    self.env.render(save=True, name=f"full/{i:03}", goal=True)
                 ep_r += r
                 o = o_1
                 if SAVE:
@@ -272,6 +273,7 @@ class SAC:
                     if render:
                         print("Episode finished with total reward ", ep_r)
                     break
+                i += 1
 
         if self.arglist.mode == "eval":
             print("Average return :", np.mean(ep_r_list))

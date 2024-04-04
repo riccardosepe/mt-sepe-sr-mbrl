@@ -16,7 +16,8 @@ labels = {
     'mlp': "$\\mathcal{D}$"
     }
 
-def plot(infolder, lrs=None, save=False):
+def plot(lrs=None, save=False):
+    infolder = f"{os.path.dirname(__file__)}/../FINAL"
     data = {"lnn": None, "mlp": None}
     for fo in data:
         path = os.path.join(infolder, f"model_{fo}_json", "tensorboard.json")
@@ -26,6 +27,7 @@ def plot(infolder, lrs=None, save=False):
     fig, ax = plt.subplots()
 
     v = {'lnn': [], 'mlp': []}
+    colors = ["#2ca02c", "#9467bd"]
     for model, model_data in data.items():
         for run, run_data in model_data.items():
             lrr = run.split("_")[-1]
@@ -51,14 +53,15 @@ def plot(infolder, lrs=None, save=False):
         min_overall = min(min_overall, np.min(mins))
         line_above = means + stds
         line_below = means - stds
-        p = ax.plot(steps[r:], means[r:], label=f"data from {labels[model]}")
-        color = p[0].get_color()
+        color = colors[i]
+        p = ax.plot(steps[r:], means[r:], label=f"{model.upper()}", color=color)
+        # color = p[0].get_color()
 
         ax.plot(steps[r:], line_below[r:], linewidth=0.5, color=color)
         ax.plot(steps[r_fill:], line_above[r_fill:], linewidth=0.5, color=color)
         ax.fill_between(steps[r_fill:], line_below[r_fill:], line_above[r_fill:], alpha=0.3, color=color)
 
-        ax.plot(steps[r:], smooth(values[best_run, r:], 0.8), linestyle='--', linewidth=3, color=adjust_color_brightness(color, 0.3), label=f"best {labels[model]} run")
+        ax.plot(steps[r:], smooth(values[best_run, r:], 0.8), linestyle='--', linewidth=3, color=adjust_color_brightness(color, 0.3), label=f"best {model.upper()} run")
     # ax.axhline(min_overall, color='green', linestyle='--', label="min overall")
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
@@ -91,7 +94,7 @@ def plot(infolder, lrs=None, save=False):
     ax.set_ylabel("L1 loss")
 
     if save:
-        path = f"{os.path.dirname(__file__)}/../plots/compare_reward_loss.png"
+        path = f"{os.path.dirname(__file__)}/../plots/compare_reward_loss2.png"
         plt.savefig(path, bbox_inches='tight')
     else:
         plt.tight_layout()
@@ -99,9 +102,4 @@ def plot(infolder, lrs=None, save=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--folder", type=str, help="Folder containing the JSON files", required=True)
-
-    args = parser.parse_args()
-
-    plot(args.folder, save=True)
+    plot(save=True)

@@ -64,7 +64,7 @@ class BaseEnv:
     def get_power(self, a, sdot):
         pass
 
-    def draw(self):
+    def draw(self, **kwargs):
         pass
 
     def set_state(self, s):
@@ -166,12 +166,17 @@ class BaseEnv:
         sdot = self.F(self.inertials+s.tolist()+a.tolist()).flatten()
         return np.concatenate((sdot, self.a_zeros, self.get_power(a, sdot)))
 
-    def render(self):
+    def render(self, save=False, name=None, **kwargs):
         if self.display:
             self.screen.blit(self.background, (0, 0))
-            self.draw()
+            self.draw(**kwargs)
             time.sleep(0.01)
             pygame.display.flip()
+            if save:
+                assert name is not None, "Name not provided for saving"
+                path = f"{os.path.dirname(__file__)}/../FINAL/images/{name}.png"
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                pygame.image.save(self.screen, f"{os.path.dirname(__file__)}/../FINAL/images/{name}.png")
         else:
             self.display = True
             pygame.init()

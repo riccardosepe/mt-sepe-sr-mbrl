@@ -1,13 +1,15 @@
-from scipy.integrate import solve_ivp
-
-from env.base import BaseEnv
-from env.utils import rect_points, wrap, basic_check
-from env import rewards
-import numpy as np
-import pygame
 import os
 
 import dill as pickle
+import numpy as np
+import pygame
+from scipy.integrate import solve_ivp
+
+from env import rewards
+from env.base import BaseEnv
+from env.utils import basic_check
+from utils.utils import adjust_color_brightness
+
 pickle.settings['recurse'] = True
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -55,6 +57,14 @@ class SoftReacher(BaseEnv):
     def eps(self):
         if np.abs(self.state[0]) < self._eps:
             eps = self._eps * np.sign(self.state[0])
+        else:
+            eps = 0
+
+        return eps
+
+    def _eps_fn(self, state):
+        if np.abs(state[0]) < self._eps:
+            eps = self._eps * np.sign(state[0])
         else:
             eps = 0
 
@@ -153,11 +163,16 @@ class SoftReacher(BaseEnv):
 
             return self.get_obs(states), self.get_reward(states), done
 
-    def cartesian_from_obs(self):
+    def cartesian_from_obs(self, state=None):
         s_ps = np.linspace(0, self.l, 50)
         chi_ps = []
-        eps = self.eps
-        q = self.state[:self.n]
+
+        if state is None:
+            eps = self.eps
+            q = self.state[:self.n]
+        else:
+            eps = self._eps_fn(state)
+            q = state[:self.n]
         for s_p in s_ps:
             chi_ps.append(self.chi([0, self.r, eps, *q], s_p))
         return np.array(chi_ps).squeeze()
@@ -166,12 +181,13 @@ class SoftReacher(BaseEnv):
         # for the moment hardcoded
         self._goal = np.array([self.l/2, self.l*0.8])
 
-    def draw(self):
+    def draw(self, **kwargs):
         # plotting in Pygame
         h, w = self.screen_height, self.screen_width  # img height and width
         ppm = h / (2.0 * self.l)  # pixel per meter
         base_color = (150, 150, 150)
-        robot_color = (72, 209, 204)
+        # robot_color = (72, 209, 204)
+        robot_color = (0, 40, 75)
         tip_color = (255, 69, 0)
 
         # poses along the robot of shape (3, N)
@@ -184,20 +200,35 @@ class SoftReacher(BaseEnv):
         # draw the base
         pygame.draw.rect(self.screen, base_color, (0, h - curve_origin[1], w, curve_origin[1]))
 
+        if 'goal' in kwargs:
+            # draw goal
+            # goal color: green
+            goal_color = (50, 205, 50)
+            goal_pos = curve_origin + self._goal * ppm
+            goal_pos[1] = h - goal_pos[1]
+            pygame.draw.circle(self.screen, goal_color, goal_pos, 10)
+
         # transform robot poses to pixel coordinates
         # should be of shape (N, 2)
         curve = np.array((curve_origin + chi_ps[:2, :].T * ppm), dtype=np.int32)
         # invert the v pixel coordinate
         curve[:, 1] = h - curve[:, 1]
         pygame.draw.lines(self.screen, robot_color, False, curve, 10)
-        pygame.draw.circle(self.screen, tip_color, curve[-1, :], 6)
+        pygame.draw.circle(self.screen, tip_color, curve[-1, :], 10)
 
-        # draw goal
-        # goal color: green
-        goal_color = (0, 255, 0)
-        goal_pos = curve_origin + self._goal * ppm
-        goal_pos[1] = h - goal_pos[1]
-        pygame.draw.circle(self.screen, goal_color, goal_pos, 6)
+        if 'other' in kwargs:
+            other_robot_color = adjust_color_brightness(robot_color, -0.8)
+            other_tip_color = adjust_color_brightness(tip_color, -0.8)
+            state = kwargs['other']
+            chi_ps = self.cartesian_from_obs(state).T
+
+            # transform robot poses to pixel coordinates
+            # should be of shape (N, 2)
+            curve = np.array((curve_origin + chi_ps[:2, :].T * ppm), dtype=np.int32)
+            # invert the v pixel coordinate
+            curve[:, 1] = h - curve[:, 1]
+            pygame.draw.lines(self.screen, other_robot_color, False, curve, 10)
+            pygame.draw.circle(self.screen, other_tip_color, curve[-1, :], 10)
 
 
 if __name__ == '__main__':

@@ -161,10 +161,15 @@ def adjust_color_brightness(color, factor=1.0):
     Adjusts the brightness of the given color. The factor parameter specifies the adjustment factor.
     Factor < 1 will darken the color, factor > 1 will lighten the color, and factor = 1 will make no change.
     """
+    f = type(color) is tuple and type(color[0]) is int
     try:
         c = mcolors.cnames[color] if color in mcolors.cnames else color
+        if f:
+            c = tuple([cc/255 for cc in c])
         c = mcolors.to_rgb(c)
         c = [min(max(x * (1-factor), 0), 1) for x in c]  # ensure the values stay within the valid range [0, 1]
+        if f:
+            return tuple([int(cc*255) for cc in c])
         return mcolors.to_hex(c)
     except ValueError:
         print("Invalid color")
