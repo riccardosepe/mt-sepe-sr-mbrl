@@ -7,12 +7,13 @@ of [Prof. Cosimo Della Santina](mailto:c.dellasantina@tudelft.nl).
 
 The code is highly inspired, and based, on the work of Adithya Ramesh and Balaraman Ravindran, which can be found [here](https://github.com/adi3e08/Physics_Informed_Model_Based_RL).
 
+Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
 
 <table style="text-align: center">
 <tr>
-<td><img src="animations/env.gif"/></td>
-<td><img src="animations/lnn.gif"/></td>
-<td><img src="animations/mlp.gif"/></td>
+<td><img src="animations/env.gif" alt="reference"/></td>
+<td><img src="animations/lnn.gif" alt="lnn-based"/></td>
+<td><img src="animations/mlp.gif" alt="mlp-based"/></td>
 </tr>
 <tr>
 <td>reference</td>
@@ -45,15 +46,56 @@ knowledge of the real system, the power of DeLaNs to learn solutions that comply
 
 
 ## Usage
-To train MBRL LNN on Acrobot task, run,
+In the final version of this project, a model needs to be pre-trained and then used as a data generator for a Soft Actor-Critic 
+algorithm. 
 
-    python mbrl.py --env acrobot --mode train --episodes 500 --seed 0 
+1. Pre-training the model
 
-The data from this experiment will be stored in the folder "./log/acrobot/mbrl_lnn/seed_0". This folder will contain two sub folders, (i) models : here model checkpoints will be stored and (ii) tensorboard : here tensorboard plots will be stored.
+    1.1 The pre-training of the LNN-based model can be done using the following command:
+        ```
+            python train_model.py --seed 0 --lr 3e-4
+        ```
+    
+    This code will generate data in the folder `./log/model/seed_0`. Inside it there will be a `tensorboard` folder and a `.ckpt` with the networks weights.
 
-To evaluate MRBL LNN on Soft Reacher task, run,
+    1.2 The pre-training of the MLP-based model can be done using the following command:
+        ```
+            python train_model_mlp.py --seed 0 --lr 3e-4
+        ```
+    
+    This code will generate data in the folder `./log/model_mlp/seed_0`. Inside it there will be a `tensorboard` folder and a `.ckpt` with the networks weights.
 
-    python mbrl.py --env soft_reacher --mode eval --episodes 3 --seed 100 --checkpoint ./export/soft_reacher/seed_0/last.ckpt --render
+After inspecting the result, the best model weights must be placed in tge `./weights` folder under the name `best_model_lnn.ckpt` and `best_model_mlp.ckpt`.
+
+2. Training the SAC algorithm
+
+    2.1 The training of the SAC algorithm in a model-free way can be done using the following command:
+        ```
+            python sac.py --env soft_reacher --mode train --episodes 500 --seed 0
+        ```
+
+    This code will generate data in the folder `./log/soft_reacher/sac/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes. 
+
+   2.2 The training of the SAC algorithm in a model-based way using the pretrained LNN model can be done using the following command:
+        ```
+            python sac_with_model.py --env soft_reacher --mode train --episodes 500 --seed 0 --model-type lnn
+        ```
+
+   This code will generate data in the folder `./log/soft_reacher/sac_on_lnn/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
+
+   2.3 The training of the SAC algorithm in a model-based way using the pretrained MLP model can be done using the following command:
+        ```
+            python sac_with_model.py --env soft_reacher --mode train --episodes 500 --seed 0 --model-type mlp
+        ```
+
+   This code will generate data in the folder `./log/soft_reacher/sac_on_mlp/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
+    
+3. Evaluating the trained models
+
+    3.1 To evaluate the SAC algorithm on Soft Reacher task, run,
+        ```
+            python sac.py --env soft_reacher --mode eval --checkpoint path_to_checkpoint
+        ```
 
 ## Citation
 If you find this work helpful, please consider starring this repo and citing our paper using the following Bibtex.
