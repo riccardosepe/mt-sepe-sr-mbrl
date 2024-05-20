@@ -56,8 +56,11 @@ def plot(save=False):
         # means_line_above = smooth(means_line_above, 0.9)
         # means_line_below = smooth(means_line_below, 0.9)
         color = colors[i]
-
-        p = ax.plot(steps, means_mean, label=model_name.upper(), linewidth=3, color=colors[i])
+        if model_name == 'env':
+            lab = 'ref.'
+        else:
+            lab = model_name.upper()
+        p = ax.plot(steps, means_mean, label=lab, linewidth=3, color=colors[i])
         # color = p[0].get_color()
         ax.plot(steps, means_line_below, linewidth=0.5, color=color)
         ax.plot(steps, means_line_above, linewidth=0.5, color=color)
