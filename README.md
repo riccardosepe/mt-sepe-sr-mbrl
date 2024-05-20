@@ -1,24 +1,48 @@
-# Physics-Informed Model-Based RL
+# Physics-Informed Model-Based Reinforcement Learning for Soft Robot Control
 
-This work has been accepted at <a href="https://l4dc.seas.upenn.edu/" target="_blank">Learning for Dynamics & Control Conference (L4DC), 2023</a>.
+This repo contains the code related to my master thesis at Politecnico di Torino, Italy, in the [VANDAL department](https://vandal.polito.it), 
+under the supervision of [Prof. Giuseppe Averta](mailto:giuseppe.averta@polito.it).
+The thesis was partially carried out at TU Delft, Netherlands, in the [Cognitive Robotics](https://www.tudelft.nl/en/me/about/departments/cognitive-robotics-cor) department, under the supervision
+of [Prof. Cosimo Della Santina](mailto:c.dellasantina@tudelft.nl).
 
-<p align="center">
-<img src="https://adi3e08.github.io/files/research/pimbrl/envs.png" width="100%"/>
-</p>
+The code is highly inspired, and based, on the work of Adithya Ramesh and Balaraman Ravindran, which can be found [here](https://github.com/adi3e08/Physics_Informed_Model_Based_RL).
+
+
+<table style="text-align: center">
+<tr>
+<td><img src="animations/env.gif"/></td>
+<td><img src="animations/lnn.gif"/></td>
+<td><img src="animations/mlp.gif"/></td>
+</tr>
+<tr>
+<td>reference</td>
+<td>LNN-based</td>
+<td>MLP-based</td>
+</tr>
+</table>
 
 ## Abstract
-We apply reinforcement learning (RL) to robotics tasks. One of the drawbacks of traditional RL algorithms has been their poor sample efficiency. One approach to improve the sample efficiency is model-based RL. In our model-based RL algorithm, we learn a model of the environment, essentially its transition dynamics and reward function, use it to generate imaginary trajectories and backpropagate through them to update the policy, exploiting the differentiability of the model. Intuitively, learning more accurate models should lead to better model-based RL performance. Recently, there has been growing interest in developing better deep neural network based dynamics models for physical systems, by utilizing the structure of the underlying physics. We focus on robotic systems undergoing rigid body motion without contacts. We compare two versions of our model-based RL algorithm, one which uses a standard deep neural network based dynamics model and the other which uses a much more accurate, physics-informed neural network based dynamics model. We show that, in model-based RL, model accuracy mainly matters in environments that are sensitive to initial conditions, where numerical errors accumulate fast. In these environments, the physics-informed version of our algorithm achieves significantly better average-return and sample efficiency. In environments that are not sensitive to initial conditions, both versions of our algorithm achieve similar average-return, while the physics-informed version achieves better sample efficiency. We also show that, in challenging environments, physics-informed model-based RL achieves better average-return than state-of-the-art model-free RL algorithms such as Soft Actor-Critic, as it computes the policy-gradient analytically, while the latter estimates it through sampling.
+Soft robots are gaining popularity in the scientific community, due to the numerous applications for which they outperform their rigid counterparts. The trade-off lies in the difficulty to model and control them. In the last decade, the community has developed various advanced techniques to improve our ability to model them, with the purpose of developing effective controllers. While first-principle solutions require expert knowledge, data-driven techniques, which overcome this limitation, are data inefficient (i.e., they require a significant amount of real-world data) and are time-consuming in training. In addition, off-the-shelf data-driven approaches such as the Multi Layer Perceptron learn solutions that don’t obey physical laws.
 
-For more information check out,
-- [Project Webpage](https://adi3e08.github.io/research/pimbrl)
-- [Paper](https://arxiv.org/abs/2212.02179)
+This work presents a data efficient strategy to derive a model of the soft system and a controller for it: the learned model regresses the forward dynamics of the system purely from kinematic observational data, and the controller is a Model-Based Deep Reinforcement Learning policy trained on model-generated data. The model regression makes use of Physics-based inductive biases to learn plausible behaviors, following the paradigm of Physics-Informed Neural Networks (PINNs), in particular that of Deep Lagrangian Networks (DeLaNs).
+
+The proposed solution is composed of three stages: i) collection of the data samples from the real (simulated) system using a random policy; ii) training of a set of simple MLPs to learn the coefficients of the Euler-Lagrange equations of the system; iii) training of the RL-based controller using data from the learned model, to obtain a robust policy without interacting with the real system. Ultimately, an iterative reapplication of these three stages – by replacing the random policy with the one under training – is investigated, aiming to obtain a more accurate policy with fewer interactions. Experimental validation has been carried out for a single-segment soft rod modeled with the Piecewise Constant Strain approximation, with the goal of controlling it to make its tip reach an arbitrary point in space.
+
+This approach combines, for the first time on a soft robotics system, the ability of Deep Reinforcement Learning to generate robust controllers with minimal
+
+knowledge of the real system, the power of DeLaNs to learn solutions that comply with fundamental physical laws, and the data efficiency of Model-Based RL, which allows for the training of an effective policy while minimizing the interactions with the real system.
 
 ## Requirements
-- Python
-- Numpy
-- Pytorch
-- Tensorboard
-- Pygame
+- python 3
+- numpy
+- scipy
+- pytorch
+- tensorboard
+- pygame
+- matplotlib
+- torchode
+- tqdm
+
 
 ## Usage
 To train MBRL LNN on Acrobot task, run,
