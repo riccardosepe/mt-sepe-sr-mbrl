@@ -84,12 +84,16 @@ class ModelEnv(BaseEnv):
 
         return eps
 
-    def reset(self):
+    def reset(self, real_state=None):
         self.t = 0
-        v = 0.1
-        initial_pos = np.random.uniform(low=-2*v, high=2*v, size=(self._batch_size, self.n)) * self._pos_bounds
-        initial_vel = np.random.uniform(low=-v, high=v, size=(self._batch_size, self.n)) * self._vel_bounds
-        state = np.concatenate((initial_pos, initial_vel), axis=1)  # [:, None]
+        if real_state is not None:
+            assert self._batch_size == 1
+            state = real_state[None, :]
+        else:
+            v = 0.1
+            initial_pos = np.random.uniform(low=-2*v, high=2*v, size=(self._batch_size, self.n)) * self._pos_bounds
+            initial_vel = np.random.uniform(low=-v, high=v, size=(self._batch_size, self.n)) * self._vel_bounds
+            state = np.concatenate((initial_pos, initial_vel), axis=1)  # [:, None]
         # state = np.repeat(state, 64, axis=1).T
 
         self._state = torch.tensor(state).to(self.device)
