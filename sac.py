@@ -8,6 +8,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+from env.model_env import ModelEnv
 from env.utils import make_env
 from models.sac import ReplayBuffer, ActionValueCritic, Actor
 from utils.utils import soft_update, seed_all
@@ -50,8 +51,8 @@ class SAC:
             # set target entropy to -|A|
             self.target_entropy = - self.action_size
 
-            path = "./log/"+self.env.name+"/sac"
-            self.exp_dir = os.path.join(path, "seed_"+str(self.arglist.seed))
+            path = "./log/" + self.env.name + "/sac"
+            self.exp_dir = os.path.join(path, "seed_" + str(self.arglist.seed))
             self.model_dir = os.path.join(self.exp_dir, "models")
             self.tensorboard_dir = os.path.join(self.exp_dir, "tensorboard")
 
@@ -180,7 +181,7 @@ class SAC:
                         next_q_value = torch.min(
                             next_q_value_1, next_q_value_2)
                         expected_q_value = R + self.arglist.gamma * \
-                            (next_q_value - torch.exp(self.log_alpha) * logp_A_1)
+                                           (next_q_value - torch.exp(self.log_alpha) * logp_A_1)
 
                     critic_loss_1 = self.critic_loss_fn_1(
                         q_value_1, expected_q_value)
@@ -228,17 +229,83 @@ class SAC:
                     with torch.no_grad():
                         writer.add_scalar('alpha', torch.exp(
                             self.log_alpha).item(), episode)
-                    if episode % self.arglist.eval_every == 0 or episode == self.arglist.episodes-1:
+                    if episode % self.arglist.eval_every == 0 or episode == self.arglist.episodes - 1:
                         # Evaluate agent performance
                         eval_ep_r_list = self.eval(self.arglist.eval_over)
                         writer.add_scalar('eval_ep_r', np.mean(
                             eval_ep_r_list), episode)
-                        self.save_checkpoint(str(episode)+".ckpt")
-                    if (episode % 250 == 0 or episode == self.arglist.episodes-1) and episode > self.start_episode:
+                        self.save_checkpoint(str(episode) + ".ckpt")
+                    if (episode % 250 == 0 or episode == self.arglist.episodes - 1) and episode > self.start_episode:
                         self.save_backup(episode)
                     break
 
     def eval(self, episodes, render=False):
+        # Evaluate agent performance over several episodes
+        ep_r_list = []
+        model_path_mlp = f"./weights/best_model_mlp.ckpt"
+        model_mlp = ModelEnv(path=model_path_mlp,
+                             env=self.env,
+                             batch_size=1,
+                             model_type='mlp')
+
+        model_path_lnn = f"./weights/best_model_lnn.ckpt"
+        model_lnn = ModelEnv(path=model_path_lnn,
+                             env=self.env,
+                             batch_size=1,
+                             model_type='lnn')
+
+        env_list = []
+        mlp_list = []
+        lnn_list = []
+        for episode in range(episodes):
+            o, _, _ = self.env.reset()
+            ep_r = 0
+            i = 0
+            env_list.append([])
+            mlp_list.append([])
+            lnn_list.append([])
+            o_mlp, _, _ = model_mlp.reset(real_state=o)
+            o_lnn, _, _ = model_lnn.reset(real_state=o)
+            env_list[-1].append(self.env.cartesian_from_obs()[-1])
+            mlp_list[-1].append(self.env.cartesian_from_obs(state=o_mlp.detach().numpy().squeeze())[-1])
+            lnn_list[-1].append(self.env.cartesian_from_obs(state=o_lnn.detach().numpy().squeeze())[-1])
+
+            while True:
+                with torch.no_grad():
+                    a, _ = self.actor(torch.tensor(
+                        o, dtype=torch.float64, device=self.device).unsqueeze(0), True)
+                a = a.cpu().numpy()[0]
+                o_1, r, done = self.env.step(a, last=True)
+                if render:
+                    self.env.render(save=True, name=f"full/{i:03}", goal=True)
+                ep_r += r
+                o = o_1
+                o_mlp, _, _ = model_mlp.step(
+                    action=torch.tensor(a, dtype=torch.float64, device=self.device).unsqueeze(0))
+                env_list[-1].append(self.env.cartesian_from_obs()[-1])
+                mlp_list[-1].append(self.env.cartesian_from_obs(state=o_mlp.detach().numpy().squeeze())[-1])
+                o_lnn, _, _ = model_lnn.step(
+                    action=torch.tensor(a, dtype=torch.float64, device=self.device).unsqueeze(0))
+                lnn_list[-1].append(self.env.cartesian_from_obs(state=o_lnn.detach().numpy().squeeze())[-1])
+                if done:
+                    ep_r_list.append(ep_r)
+                    if render:
+                        print("Episode finished with total reward ", ep_r)
+                    break
+                i += 1
+
+        if self.arglist.mode == "eval":
+            print("Average return :", np.mean(ep_r_list))
+
+        data = {"env": np.array(env_list),
+                "model_mlp": np.array(mlp_list),
+                "model_lnn": np.array(lnn_list),
+                }
+        np.save(f"FINAL/eval/internal_states_lnn.npy", data)
+
+        return ep_r_list
+
+    def eval2(self, episodes, render=False):
         # Evaluate agent performance over several episodes
         ep_r_list = []
         if SAVE:
@@ -252,7 +319,7 @@ class SAC:
                 observations[episode].append(o)
                 ees[episode].append(self.env.cartesian_from_obs()[-1])
             ep_r = 0
-            i=0
+            i = 0
             while True:
                 with torch.no_grad():
                     a, _ = self.actor(torch.tensor(
