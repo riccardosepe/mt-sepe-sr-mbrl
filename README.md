@@ -20,7 +20,7 @@ The code is highly inspired, and based, on the work of Adithya Ramesh and Balara
 <td><img src="animations/mlp.gif" alt="mlp-based"/></td>
 </tr>
 <tr>
-<td colspan="3">Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
+<td colspan="3">Here you can see the comparison between the reference (model-free RL) behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
 </td>
 </tr>
 </table>
@@ -93,18 +93,44 @@ After inspecting the result, the best model weights must be placed in tge `./wei
     1. To evaluate the SAC algorithm on Soft Reacher task, run,
    
        `python sac.py --env soft_reacher --mode eval --checkpoint path_to_checkpoint`
-   
+  
+
+## Results
+
+1. Model performances
+
+<img src="plots/ee.png" alt="end-effector plots">
+<img src="plots/ee_error.png" alt="end-effector error plots">
+
+These plots show the results of the model training step over a fixed evaluation trajectory. The first one shows the Cartesian coordinates of the real (simulated) robot, of the LNN-based model, and of the MLP-based one.
+The second one shows instead the absolute errors.</br>
+While the maximum errors of both the trained methods are comparable, the LNN-based one tracks the reference behavior more closely over the trajectory.
+
+2. Controller performances
+
+<img src="plots/sac_val_all_returns.png" alt="rl plots">
+
+This plot shows the performance of the SAC algorithm trained in a model-free way (ref.), with a MLP-based model and with 
+a LNN-based one. The LNN-based model reaches performance comparable to the model-free one, using way less real-world interactions.
+On the other hand, the MLP-based one fails to learn a good policy, due to the lack of physical constraints in the model.
+
+## Bibliography
+
+This is a short list of the few most relevant papers that have been used in this work:
+
+- [Deep Lagrangian Networks: Using Physics as Model Prior for Deep Learning](https://arxiv.org/abs/1907.04490)
+- [Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor](https://arxiv.org/abs/1801.01290)
+- [Physics-Informed Model-Based Reinforcement Learning](https://arxiv.org/abs/2212.02179)
 
 ## Citation
-If you find this work helpful, please consider starring this repo and citing our paper using the following Bibtex.
+If you find this work helpful, please consider starring this repo and citing it as follows:
 ```bibtex
-@inproceedings{ramesh2023physics,
-  title={Physics-Informed Model-Based Reinforcement Learning},
-  author={Ramesh, Adithya and Ravindran, Balaraman},
-  booktitle={Learning for Dynamics and Control Conference},
-  pages={26--37},
-  year={2023},
-  organization={PMLR}
+@mastersthesis{sepe2024pimbrl,
+  title={Physics-Informed Model-Based Reinforcement Learning for Soft Robot Control},
+  author={Sepe, Riccardo},
+  school={Politecnico di Torino},
+  year={2024}
 }
+```
 
 
