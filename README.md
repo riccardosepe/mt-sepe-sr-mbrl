@@ -9,7 +9,9 @@ The code is highly inspired, and based, on the work of Adithya Ramesh and Balara
 
 
 <table style="text-align: center">
-<tr>Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
+<tr>
+<td>Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
+</td>
 </tr>
 <tr>
 <td><img src="animations/env.gif" alt="reference"/></td>
