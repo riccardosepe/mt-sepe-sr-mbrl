@@ -53,7 +53,7 @@ algorithm.
 
    1. The pre-training of the LNN-based model can be done using the following command:
         
-       `python train_model.py --seed 0 --lr 3e-4`
+       ```python train_model.py --seed 0 --lr 3e-4```
     
        This code will generate data in the folder `./log/model/seed_0`. Inside it there will be a `tensorboard` folder and a `.ckpt` with the networks weights.
 
