@@ -51,7 +51,7 @@ algorithm.
 
 1. Pre-training the model
 
-    1.1 The pre-training of the LNN-based model can be done using the following command:
+    1. The pre-training of the LNN-based model can be done using the following command:
 
         
     `python train_model.py --seed 0 --lr 3e-4`
