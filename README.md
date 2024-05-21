@@ -9,7 +9,7 @@ The code is highly inspired, and based, on the work of Adithya Ramesh and Balara
 
 
 <table style="text-align: center">
-<tr style="font-style: italic">
+<tr style="font-style: italic; text-align: center">
 <td>reference</td>
 <td>LNN-based</td>
 <td>MLP-based</td>
