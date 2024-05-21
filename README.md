@@ -77,22 +77,19 @@ After inspecting the result, the best model weights must be placed in tge `./wei
     
       `python sac_with_model.py --env soft_reacher --mode train --episodes 500 --seed 0 --model-type lnn`
 
-   This code will generate data in the folder `./log/soft_reacher/sac_on_lnn/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
+      This code will generate data in the folder `./log/soft_reacher/sac_on_lnn/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
 
-   2.3 The training of the SAC algorithm in a model-based way using the pretrained MLP model can be done using the following command:
+   3. The training of the SAC algorithm in a model-based way using the pretrained MLP model can be done using the following command:
 
-    
-    `python sac_with_model.py --env soft_reacher --mode train --episodes 500 --seed 0 --model-type mlp`
+      `python sac_with_model.py --env soft_reacher --mode train --episodes 500 --seed 0 --model-type mlp`
 
-
-   This code will generate data in the folder `./log/soft_reacher/sac_on_mlp/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
+      This code will generate data in the folder `./log/soft_reacher/sac_on_mlp/seed_0`. Inside it there will be a `tensorboard` folder and a `models` folder with the networks weights checkpointed every 50 episodes.
     
 3. Evaluating the trained models
 
-    3.1 To evaluate the SAC algorithm on Soft Reacher task, run,
-
+    1. To evaluate the SAC algorithm on Soft Reacher task, run,
    
-    `python sac.py --env soft_reacher --mode eval --checkpoint path_to_checkpoint`
+       `python sac.py --env soft_reacher --mode eval --checkpoint path_to_checkpoint`
    
 
 ## Citation
