@@ -1,15 +1,16 @@
 # Physics-Informed Model-Based Reinforcement Learning for Soft Robot Control
 
-This repo contains the code related to my master thesis at Politecnico di Torino, Italy, in the [VANDAL department](https://vandal.polito.it), 
+This repo contains the code related to my master thesis at Politecnico di Torino, Italy, in the [VANDAL](https://vandal.polito.it) department, 
 under the supervision of [Prof. Giuseppe Averta](mailto:giuseppe.averta@polito.it).
 The thesis was partially carried out at TU Delft, Netherlands, in the [Cognitive Robotics](https://www.tudelft.nl/en/me/about/departments/cognitive-robotics-cor) department, under the supervision
 of [Prof. Cosimo Della Santina](mailto:c.dellasantina@tudelft.nl).
 
 The code is highly inspired, and based, on the work of Adithya Ramesh and Balaraman Ravindran, which can be found [here](https://github.com/adi3e08/Physics_Informed_Model_Based_RL).
 
-Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
 
 <table style="text-align: center">
+<tr>Here you can see the comparison between the reference behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
+</tr>
 <tr>
 <td><img src="animations/env.gif" alt="reference"/></td>
 <td><img src="animations/lnn.gif" alt="lnn-based"/></td>
@@ -53,7 +54,7 @@ algorithm.
 
    1. The pre-training of the LNN-based model can be done using the following command:
         
-       ```python train_model.py --seed 0 --lr 3e-4```
+       `python train_model.py --seed 0 --lr 3e-4`
     
        This code will generate data in the folder `./log/model/seed_0`. Inside it there will be a `tensorboard` folder and a `.ckpt` with the networks weights.
 
