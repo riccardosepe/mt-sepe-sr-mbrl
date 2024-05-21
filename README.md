@@ -113,7 +113,7 @@ While the maximum errors of both the trained methods are comparable, the LNN-bas
 <img src="plots/sac_val_all_returns.png" alt="rl plots" width="50%">
 </p>
 
-This plot shows the performance of the SAC algorithm trained in a model-free way (ref.), with a MLP-based model and with 
+This plot shows the performance of the SAC algorithm trained in a model-free way (_ref._), with a MLP-based model and with 
 a LNN-based one. The LNN-based model reaches performance comparable to the model-free one, using way less real-world interactions.
 On the other hand, the MLP-based one fails to learn a good policy, due to the lack of physical constraints in the model.
 
@@ -124,6 +124,7 @@ This is a short list of the few most relevant papers that have been used in this
 - [Deep Lagrangian Networks: Using Physics as Model Prior for Deep Learning](https://arxiv.org/abs/1907.04490)
 - [Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor](https://arxiv.org/abs/1801.01290)
 - [Physics-Informed Model-Based Reinforcement Learning](https://arxiv.org/abs/2212.02179)
+- [Physics-Informed Neural Networks to Model and Control Robots: A Theoretical and Experimental Investigation](https://arxiv.org/abs/2305.05375)
 
 ## Citation
 If you find this work helpful, please consider starring this repo and citing it as follows:
