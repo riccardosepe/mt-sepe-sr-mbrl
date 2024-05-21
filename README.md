@@ -98,9 +98,10 @@ After inspecting the result, the best model weights must be placed in tge `./wei
 ## Results
 
 1. Model performances
-
-<img src="plots/ee.png" alt="end-effector plots">
-<img src="plots/ee_error.png" alt="end-effector error plots">
+<p align="center">
+<img src="plots/ee.png" alt="end-effector plots" width="50%">
+<img src="plots/ee_error.png" alt="end-effector error plots" width="50%">
+</p>
 
 These plots show the results of the model training step over a fixed evaluation trajectory. The first one shows the Cartesian coordinates of the real (simulated) robot, of the LNN-based model, and of the MLP-based one.
 The second one shows instead the absolute errors.</br>
@@ -108,7 +109,9 @@ While the maximum errors of both the trained methods are comparable, the LNN-bas
 
 2. Controller performances
 
-<img src="plots/sac_val_all_returns.png" alt="rl plots">
+<p align="center">
+<img src="plots/sac_val_all_returns.png" alt="rl plots" width="50%">
+</p>
 
 This plot shows the performance of the SAC algorithm trained in a model-free way (ref.), with a MLP-based model and with 
 a LNN-based one. The LNN-based model reaches performance comparable to the model-free one, using way less real-world interactions.
