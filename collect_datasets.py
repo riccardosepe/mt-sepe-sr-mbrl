@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 from tqdm import tqdm
 
@@ -63,16 +64,4 @@ def main(seed):
 
 
 if __name__ == '__main__':
-    # main(27)
-    from visualization.histograms import *
-    data = torch.load("data/seed_27/data.pt")
-    data_large = data["large"]
-    data_small = data["small"]
-    states_histograms(data_large)
-    states_histograms(data_small)
-    actions_histograms(data_large)
-    actions_histograms(data_small)
-    rewards_histograms(data_large)
-    rewards_histograms(data_small)
-    joint_positions_velocities_histograms(data_large)
-    joint_positions_velocities_histograms(data_small)
+    main(27)
