@@ -15,9 +15,9 @@ The code is highly inspired, and based, on the work of Adithya Ramesh and Balara
 <td>MLP-based</td>
 </tr>
 <tr>
-<td><img src="animations/env.gif" alt="reference"/></td>
-<td><img src="animations/lnn.gif" alt="lnn-based"/></td>
-<td><img src="animations/mlp.gif" alt="mlp-based"/></td>
+<td><img src="images/env.gif" alt="reference"/></td>
+<td><img src="images/lnn.gif" alt="lnn-based"/></td>
+<td><img src="images/mlp.gif" alt="mlp-based"/></td>
 </tr>
 <tr>
 <td colspan="3">Here you can see the comparison between the reference (model-free RL) behavior, the RL algorithm trained on the LNN-based model, and the RL algorithm trained on the MLP-based model.
@@ -99,8 +99,8 @@ After inspecting the result, the best model weights must be placed in tge `./wei
 
 1. Model performances
 <p align="center">
-<img src="plots/ee.png" alt="end-effector plots" width="50%">
-<img src="plots/ee_error.png" alt="end-effector error plots" width="50%">
+<img src="images/ee.png" alt="end-effector plots" width="50%">
+<img src="images/ee_error.png" alt="end-effector error plots" width="50%">
 </p>
 
 These plots show the results of the model training step over a fixed evaluation trajectory. The first one shows the Cartesian coordinates of the real (simulated) robot, of the LNN-based model, and of the MLP-based one.
@@ -110,7 +110,7 @@ While the maximum errors of both the trained methods are comparable, the LNN-bas
 2. Controller performances
 
 <p align="center">
-<img src="plots/sac_val_all_returns.png" alt="rl plots" width="50%">
+<img src="images/sac_val_all_returns.png" alt="rl plots" width="50%">
 </p>
 
 This plot shows the performance of the SAC algorithm trained in a model-free way (_ref._), with a MLP-based model and with 
