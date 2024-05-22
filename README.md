@@ -52,6 +52,15 @@ knowledge of the real system, the power of DeLaNs to learn solutions that comply
 In the final version of this project, a model needs to be pre-trained and then used as a data generator for a Soft Actor-Critic 
 algorithm. 
 
+0. Data generation
+
+   1. The data generation can be done using the following command:
+        
+       `python collect_dataset.py`
+    
+       A seed can be set for this step. It is currently hardcoded in the `collect_dataset.py` file.
+       This code will generate data in the folder `./data/seed_0`. Inside there will be a `data.pt` file.
+
 1. Pre-training the model
 
    1. The pre-training of the LNN-based model can be done using the following command:
