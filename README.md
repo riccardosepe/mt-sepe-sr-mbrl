@@ -32,9 +32,7 @@ This work presents a data efficient strategy to derive a model of the soft syste
 
 The proposed solution is composed of three stages: i) collection of the data samples from the real (simulated) system using a random policy; ii) training of a set of simple MLPs to learn the coefficients of the Euler-Lagrange equations of the system; iii) training of the RL-based controller using data from the learned model, to obtain a robust policy without interacting with the real system. Ultimately, an iterative reapplication of these three stages – by replacing the random policy with the one under training – is investigated, aiming to obtain a more accurate policy with fewer interactions. Experimental validation has been carried out for a single-segment soft rod modeled with the Piecewise Constant Strain approximation, with the goal of controlling it to make its tip reach an arbitrary point in space.
 
-This approach combines, for the first time on a soft robotics system, the ability of Deep Reinforcement Learning to generate robust controllers with minimal
-
-knowledge of the real system, the power of DeLaNs to learn solutions that comply with fundamental physical laws, and the data efficiency of Model-Based RL, which allows for the training of an effective policy while minimizing the interactions with the real system.
+This approach combines, for the first time on a soft robotics system, the ability of Deep Reinforcement Learning to generate robust controllers with minimal knowledge of the real system, the power of DeLaNs to learn solutions that comply with fundamental physical laws, and the data efficiency of Model-Based RL, which allows for the training of an effective policy while minimizing the interactions with the real system.
 
 ## Requirements
 - python 3
